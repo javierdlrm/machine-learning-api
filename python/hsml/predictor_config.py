@@ -25,21 +25,29 @@ class PredictorConfig:
     def __init__(
         self,
         serving_tool="DEFAULT",
+        # predictor
         min_instances=1,
         max_instances=None,
-        transformer=None,
+        cores=1,
+        memory=1024,
+        gpus=0,
+        # transformer
         min_transformer_instances=1,
         max_transformer_instances=None,
+        # kafka
         inference_logging=None,
         topic_name=None,
         topic_replication_factor=None,
         topic_num_partitions=None,
+        # framework-specific
         request_batching=False,
     ):
         self._serving_tool = serving_tool
         self._min_instances = min_instances
         self._max_instances = max_instances
-        self._transformer = transformer
+        self._cores = cores
+        self._memory = memory
+        self._gpus = gpus
         self._min_transformer_instances = min_transformer_instances
         self._max_transformer_instances = max_transformer_instances
         self._inference_logging = inference_logging
@@ -61,7 +69,9 @@ class PredictorConfig:
             "serving_tool": self._serving_tool,
             "min_instances": self._min_instances,
             "max_instances": self._max_instances,
-            "transformer": self._transformer,
+            "cores": self._cores,
+            "memory": self._memory,
+            "gpus": self._gpus,
             "min_transformer_instances": self._min_transformer_instances,
             "max_transformer_instances": self._max_transformer_instances,
             "inference_logging": self._inference_logging,

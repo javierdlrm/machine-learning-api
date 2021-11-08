@@ -100,7 +100,13 @@ class Model:
         """
         self._model_engine.delete(self)
 
-    def deploy(self, name=None, predictor_config=None):
+    def deploy(
+        self,
+        name=None,
+        artifact_version="CREATE",
+        transformer=None,
+        predictor_config=None,
+    ):
         """Deploy the model"""
 
         if name is None:
@@ -108,7 +114,14 @@ class Model:
         if predictor_config is None:
             predictor_config = PredictorConfig()
 
-        return Predictor(name, predictor_config).deploy()
+        return Predictor(
+            name,
+            self.path,
+            self._version,
+            predictor_config,
+            artifact_version=artifact_version,
+            transformer=transformer,
+        ).deploy()
 
     @classmethod
     def from_response_json(cls, json_dict):

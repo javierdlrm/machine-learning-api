@@ -64,6 +64,11 @@ class Deployment:
 
         self._serving_api.delete(self)
 
+    def get_status(self):
+        """Get status of the deployment"""
+
+        return self._serving_api.get_status(self._id)
+
     @classmethod
     def from_response_json(cls, json_dict):
         predictors = predictor.from_response_json(json_dict)

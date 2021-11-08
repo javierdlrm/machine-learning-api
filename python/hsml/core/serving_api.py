@@ -17,6 +17,7 @@
 from hsml import client
 
 from hsml import deployment
+from hsml import predictor_status
 
 
 class ServingApi:
@@ -61,6 +62,25 @@ class ServingApi:
         ]
         deployment_json = _client._send_request("GET", path_params)
         return deployment.Deployment.from_response_json(deployment_json)
+
+    def get_status(self, id):
+        """Get the status of a deployment with a certain id
+
+        :param id: id of the deployment
+        :type id: int
+        :return: predictor status
+        :rtype: PredictorStatus
+        """
+
+        _client = client.get_instance()
+        path_params = [
+            "project",
+            _client._project_id,
+            "serving",
+            str(id),
+        ]
+        deployment_json = _client._send_request("GET", path_params)
+        return predictor_status.PredictorStatus.from_response_json(deployment_json)
 
     def delete(self, deployment_instance):
         """Delete the deployment and metadata.
