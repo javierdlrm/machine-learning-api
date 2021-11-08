@@ -29,6 +29,12 @@ from hsml.sklearn.model import Model as SkLearnModel
 from hsml.python.model import Model as PyModel
 from hsml.model import Model as BaseModel
 
+from hsml.predictor_config import PredictorConfig as BasePredictorConfig
+from hsml.tensorflow.predictor_config import PredictorConfig as TFPredictorConfig
+from hsml.torch.predictor_config import PredictorConfig as TorchPredictorConfig
+from hsml.sklearn.predictor_config import PredictorConfig as SkLearnPredictorConfig
+from hsml.python.predictor_config import PredictorConfig as PyPredictorConfig
+
 from six import string_types
 
 
@@ -189,3 +195,16 @@ def validate_metric_value(opt_val):
     raise TypeError(
         "Metric value is of type {}, expecting a number".format(type(opt_val))
     )
+
+
+def get_predictor_config_for_model(model):
+    if model.framework is None:
+        return BasePredictorConfig(model_server="FLASK")
+    if model.framework == "TENSORFLOW":
+        return TFPredictorConfig()
+    if model.framework == "TORCH":
+        return TorchPredictorConfig()
+    if model.framework == "SKLEARN":
+        return SkLearnPredictorConfig()
+    elif model.framework == "PYTHON":
+        return PyPredictorConfig()

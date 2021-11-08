@@ -15,7 +15,6 @@
 #
 
 import warnings
-import humps
 
 from hsml import util
 from hsml.core import model_api
