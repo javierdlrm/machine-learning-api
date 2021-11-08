@@ -15,7 +15,6 @@
 #
 
 import warnings
-import humps
 
 from hsml import util
 from hsml.core import model_api
@@ -45,11 +44,6 @@ class ModelRegistry:
         self._python = python_signature
         self._sklearn = sklearn_signature
         self._torch = torch_signature
-
-    @classmethod
-    def from_response_json(cls, json_dict):
-        json_decamelized = humps.decamelize(json_dict)
-        return cls(**json_decamelized)
 
     def get_model(self, name: str, version: int = None):
         """Get a model entity from the model registry.

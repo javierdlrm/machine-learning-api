@@ -19,9 +19,10 @@ import humps
 
 from hsml import util
 
-from hsml.core import model_api, dataset_api
-
 from hsml.engine import model_engine
+
+from hsml.predictor import Predictor
+from hsml.predictor_config import PredictorConfig
 
 
 class Model:
@@ -75,8 +76,6 @@ class Model:
 
         self._shared_registry_project = None
 
-        self._model_api = model_api.ModelApi()
-        self._dataset_api = dataset_api.DatasetApi()
         self._model_engine = model_engine.ModelEngine()
 
     def save(self, model_path, await_registration=480):
@@ -100,6 +99,16 @@ class Model:
             `RestAPIError`.
         """
         self._model_engine.delete(self)
+
+    def deploy(self, name=None, predictor_config=None):
+        """Deploy the model"""
+
+        if name is None:
+            name = self._name
+        if predictor_config is None:
+            predictor_config = PredictorConfig()
+
+        return Predictor(name, predictor_config).deploy()
 
     @classmethod
     def from_response_json(cls, json_dict):
