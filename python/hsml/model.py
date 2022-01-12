@@ -329,9 +329,12 @@ class Model:
             )
         return path
 
+    @property
     def absolute_path(self):
         """absolute path of the model within the project"""
-        return "Projects/{}/{}".format(self._project_name, self.path)
+        return "Projects/{}/{}".format(
+            self._project_name, self.path.replace("/" + str(self._version), "")
+        )
 
     @property
     def shared_registry_project_name(self):
