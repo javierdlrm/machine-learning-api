@@ -15,11 +15,10 @@
 
 import humps
 
-from hsml import resources_config
-from hsml import inference_logger_config
-from hsml import inference_batcher_config
-
 from hsml.component_config import ComponentConfig
+from hsml.resources_config import ResourcesConfig
+from hsml.inference_logger_config import InferenceLoggerConfig
+from hsml.inference_batcher_config import InferenceBatcherConfig
 
 
 class TransformerConfig(ComponentConfig):
@@ -38,25 +37,29 @@ class TransformerConfig(ComponentConfig):
 
     @classmethod
     def from_json(cls, json_decamelized):
-        return TransformerConfig(
-            script_file=json_decamelized.pop("transformer"),
-            resources_config=resources_config.from_json(
-                json_decamelized, "requested_transformer_instances"
-            ),
-            inference_logger=inference_logger_config.from_json(json_decamelized),
-            inference_batcher=inference_batcher_config.from_json(json_decamelized),
+        return (
+            TransformerConfig(*cls.extract_fields_from_json(json_decamelized))
+            if "transformer" in json_decamelized
+            else None
         )
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        sf = json_decamelized.pop("transformer")
+        rc = (
+            ResourcesConfig.from_json(
+                json_decamelized, "transformer_requested_instances"
+            )
+            if "transformer_requested_instances" in json_decamelized
+            else None
+        )
+        il = InferenceLoggerConfig.from_json(json_decamelized)
+        ib = InferenceBatcherConfig.from_json(json_decamelized)
+        return sf, rc, il, ib
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        self.__init__(
-            script_file=json_decamelized.pop("transformer"),
-            resources_config=resources_config.from_json(
-                json_decamelized, "requested_transformer_instances"
-            ),
-            inference_logger=inference_logger_config.from_json(json_decamelized),
-            inference_batcher=inference_batcher_config.from_json(json_decamelized),
-        )
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def to_dict(self):
