@@ -75,7 +75,7 @@ class Deployment:
         else:
             return cls.from_predictor(predictors)
 
-    @staticmethod
+    @classmethod
     def from_predictor(cls, predictor_instance):
         return Deployment(name=predictor_instance._name, predictor=predictor_instance)
 
