@@ -33,20 +33,27 @@ class KafkaTopicConfig:
         return cls.from_json(json_decamelized)
 
     @classmethod
-    def from_json(self, json_decamelized):
-        return KafkaTopicConfig(
-            topic_name=json_decamelized.pop("name"),
-            topic_num_replicas=json_decamelized.pop("num_of_replicas"),
-            topic_num_partitions=json_decamelized.pop("num_of_partitions"),
+    def from_json(cls, json_decamelized):
+        return KafkaTopicConfig(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        name = json_decamelized.pop("name")  # required
+        tnr = (
+            json_decamelized.pop("num_of_replicas")
+            if "num_of_replicas" in json_decamelized
+            else None
         )
+        tnp = (
+            json_decamelized.pop("num_of_partitions")
+            if "num_of_partitions" in json_decamelized
+            else None
+        )
+        return name, tnr, tnp
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        self.__init__(
-            topic_name=json_decamelized.pop("name"),
-            topic_num_replicas=json_decamelized.pop("num_of_replicas"),
-            topic_num_partitions=json_decamelized.pop("num_of_partitions"),
-        )
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def json(self):

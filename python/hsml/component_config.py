@@ -19,9 +19,10 @@ import humps
 from abc import abstractclassmethod, abstractmethod
 
 from hsml import util
-from hsml import resources_config as resources_conf
-from hsml import inference_logger_config
-from hsml import inference_batcher_config
+
+from hsml.resources_config import ResourcesConfig
+from hsml.inference_logger_config import InferenceLoggerConfig
+from hsml.inference_batcher_config import InferenceBatcherConfig
 
 
 class ComponentConfig:
@@ -35,17 +36,19 @@ class ComponentConfig:
         inference_batcher=None,
     ):
         self._script_file = script_file
-        self._resources_config = resources_config
-        self._inference_logger = inference_logger
-        self._inference_batcher = inference_batcher
-
-        # defaults
-        if self._resources_config is None:
-            self._resources_config = resources_conf.ResourcesConfig()
-        if self._inference_logger is None:
-            self._inference_logger = inference_logger_config.InferenceLoggerConfig()
-        if self._inference_batcher is None:
-            self._inference_batcher = inference_batcher_config.InferenceBatcherConfig()
+        self._resources_config = (
+            resources_config if resources_config is not None else ResourcesConfig()
+        )
+        self._inference_logger = (
+            inference_logger
+            if inference_logger is not None
+            else InferenceLoggerConfig()
+        )
+        self._inference_batcher = (
+            inference_batcher
+            if inference_batcher is not None
+            else InferenceBatcherConfig()
+        )
 
     @abstractclassmethod
     def from_json(cls, json_decamelized):

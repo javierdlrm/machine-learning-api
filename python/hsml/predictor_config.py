@@ -17,11 +17,11 @@ import humps
 
 from hsml import util
 
+from hsml.constants import PREDICTOR
+from hsml.component_config import ComponentConfig
 from hsml.resources_config import ResourcesConfig
 from hsml.inference_logger_config import InferenceLoggerConfig
 from hsml.inference_batcher_config import InferenceBatcherConfig
-
-from hsml.component_config import ComponentConfig
 
 
 class PredictorConfig(ComponentConfig):
@@ -30,7 +30,7 @@ class PredictorConfig(ComponentConfig):
     def __init__(
         self,
         model_server,
-        serving_tool="DEFAULT",
+        serving_tool=None,
         script_file=None,
         resources_config=None,
         inference_logger=None,
@@ -41,7 +41,9 @@ class PredictorConfig(ComponentConfig):
         )
 
         self._model_server = model_server
-        self._serving_tool = serving_tool
+        self._serving_tool = (
+            serving_tool if serving_tool is not None else PREDICTOR.SERVING_TOOL
+        )
 
     @classmethod
     def for_model(cls, model):
@@ -49,34 +51,29 @@ class PredictorConfig(ComponentConfig):
 
     @classmethod
     def from_json(cls, json_decamelized):
-        return PredictorConfig(
-            model_server=json_decamelized.pop("model_server"),
-            serving_tool=json_decamelized.pop("serving_tool"),
-            script_file=json_decamelized.pop("predictor"),
-            resources_config=ResourcesConfig.from_json(
-                json_decamelized, "requested_instances"
-            ),
-            inference_logger=InferenceLoggerConfig.from_json(json_decamelized),
-            inference_batcher=InferenceBatcherConfig.from_json(json_decamelized),
+        return PredictorConfig(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        ms = json_decamelized.pop("model_server")
+        st = json_decamelized.pop("serving_tool")
+        sf = (
+            json_decamelized.pop("predictor")
+            if "predictor" in json_decamelized
+            else None
         )
+        rc = (
+            ResourcesConfig.from_json(json_decamelized, "requested_instances")
+            if "requested_instances" in json_decamelized
+            else None
+        )
+        il = InferenceLoggerConfig.from_json(json_decamelized)
+        ib = InferenceBatcherConfig.from_json(json_decamelized)
+        return ms, st, sf, rc, il, ib
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-
-        self._resources_config.update_from_response_json(json_decamelized)
-        if self._inference_logger is not None:
-            self._inference_logger.update_from_response_json(json_decamelized)
-        if self._inference_batcher is not None:
-            self._inference_batcher.update_from_response_json(json_decamelized)
-
-        self.__init__(
-            model_server=json_decamelized.pop("model_server"),
-            serving_tool=json_decamelized.pop("serving_tool"),
-            script_file=json_decamelized.pop("predictor"),
-            resources_config=self._resources_config,
-            inference_logger=self._inference_logger,
-            inference_batcher=self._inference_batcher,
-        )
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def to_dict(self):

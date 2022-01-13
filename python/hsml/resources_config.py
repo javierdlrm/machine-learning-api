@@ -17,16 +17,19 @@ import json
 import humps
 
 from hsml import util
+from hsml.constants import RESOURCES
 
 
 class ResourcesConfig:
     """Resources configuration for predictors and transformers."""
 
-    def __init__(self, num_instances=1, cores=1, memory=1024, gpus=0):
-        self._num_instances = num_instances
-        self._cores = cores
-        self._memory = memory
-        self._gpus = gpus
+    def __init__(self, num_instances=None, cores=None, memory=None, gpus=None):
+        self._num_instances = (
+            num_instances if num_instances is not None else RESOURCES.NUM_INSTANCES
+        )
+        self._cores = cores if cores is not None else RESOURCES.CORES
+        self._memory = memory if memory is not None else RESOURCES.MEMORY
+        self._gpus = gpus if gpus is not None else RESOURCES.GPUS
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -35,22 +38,30 @@ class ResourcesConfig:
 
     @classmethod
     def from_json(cls, json_decamelized, num_instances_key):
-        resources = json_decamelized.pop("predictor_resource_config")
         return ResourcesConfig(
-            num_instances=json_decamelized.pop(num_instances_key),
-            cores=resources["cores"],
-            memory=resources["memory"],
-            gpus=resources["gpus"],
+            *cls.extract_fields_from_json(json_decamelized, num_instances_key)
         )
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized, num_instances_key):
+        num_instances = (
+            json_decamelized.pop(num_instances_key)
+            if num_instances_key in json_decamelized
+            else None
+        )
+        cores, memory, gpus = None, None, None
+        if "predictor_resource_config" in json_decamelized:
+            resources = json_decamelized.pop("predictor_resource_config")
+            cores = resources["cores"]
+            memory = resources["memory"]
+            gpus = resources["gpus"]
+
+        return num_instances, cores, memory, gpus
 
     def update_from_response_json(self, json_dict, num_instances_key):
         json_decamelized = humps.decamelize(json_dict)
-        resources = json_decamelized.pop("predictor_resource_config")
         self.__init__(
-            num_instances=json_decamelized.pop(num_instances_key),
-            cores=resources["cores"],
-            memory=resources["memory"],
-            gpus=resources["gpus"],
+            *self.extract_fields_from_json(json_decamelized, num_instances_key)
         )
         return self
 

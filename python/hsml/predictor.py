@@ -17,10 +17,10 @@ import json
 import humps
 
 from hsml import util
-from hsml.predictor_config import PredictorConfig
-from hsml.transformer_config import TransformerConfig
 
 from hsml.deployment import Deployment
+from hsml.predictor_config import PredictorConfig
+from hsml.transformer_config import TransformerConfig
 
 
 class Predictor:
@@ -70,36 +70,29 @@ class Predictor:
 
     @classmethod
     def from_json(cls, json_decamelized):
-        return Predictor(
-            name=json_decamelized.pop("name"),
-            model_name=json_decamelized.pop("model_name"),
-            model_path=json_decamelized.pop("model_path"),
-            model_version=json_decamelized.pop("model_version"),
-            artifact_version=json_decamelized.pop("artifact_version"),
-            predictor_config=PredictorConfig.from_json(json_decamelized),
-            transformer_config=TransformerConfig.from_json(json_decamelized),
-            id=json_decamelized.pop("id"),
-            created_at=json_decamelized.pop("created_at"),
-            creator=json_decamelized.pop("creator"),
-        )
+        return Predictor(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        name = json_decamelized.pop("name")
+        mn = (
+            json_decamelized.pop("model_name")
+            if "model_name" in json_decamelized
+            else name
+        )  # TODO: FIX THIS, IT'S not NAME of SERVING!
+        mp = json_decamelized.pop("model_path")
+        mv = json_decamelized.pop("model_version")
+        av = json_decamelized.pop("artifact_version")
+        pc = PredictorConfig.from_json(json_decamelized)
+        tc = TransformerConfig.from_json(json_decamelized)
+        id = json_decamelized.pop("id")
+        ca = json_decamelized.pop("created_at")
+        c = json_decamelized.pop("creator")
+        return name, mn, mp, mv, av, pc, tc, id, ca, c
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        self._predictor_config.update_from_response_json(json_decamelized)
-        if self._transformer_config is not None:
-            self._transformer_config.update_from_response_json(json_decamelized)
-        self.__init__(
-            name=json_decamelized.pop("name"),
-            model_name=json_decamelized.pop("model_name"),
-            model_path=json_decamelized.pop("model_path"),
-            model_version=json_decamelized.pop("model_version"),
-            artifact_version=json_decamelized.pop("artifact_version"),
-            predictor_config=self._predictor_config,
-            transformer_config=self._transformer_config,
-            id=json_decamelized.pop("id"),
-            created_at=json_decamelized.pop("created_at"),
-            creator=json_decamelized.pop("creator"),
-        )
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def json(self):

@@ -17,13 +17,14 @@ import json
 import humps
 
 from hsml import util
+from hsml.constants import INFERENCE_BATCHER
 
 
 class InferenceBatcherConfig:
     """Configuration for an inference batcher."""
 
-    def __init__(self, enabled=False):
-        self._enabled = enabled
+    def __init__(self, enabled=None):
+        self._enabled = enabled if enabled is not None else INFERENCE_BATCHER.ENABLED
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -31,12 +32,20 @@ class InferenceBatcherConfig:
         return cls.from_json(json_decamelized)
 
     @classmethod
-    def from_json(self, json_decamelized):
-        return InferenceBatcherConfig(enabled=json_decamelized.pop("batching_enabled"))
+    def from_json(cls, json_decamelized):
+        return InferenceBatcherConfig(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        return (
+            json_decamelized.pop("batching_enabled")
+            if "batching_enabled" in json_decamelized
+            else None
+        )
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        self.__init__(enabled=json_decamelized.pop("batching_enabled"))
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def json(self):

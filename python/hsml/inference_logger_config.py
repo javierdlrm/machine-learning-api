@@ -17,15 +17,17 @@ import json
 import humps
 
 from hsml import util
-from hsml import kafka_topic_config
+
+from hsml.constants import INFERENCE_LOGGER
+from hsml.kafka_topic_config import KafkaTopicConfig
 
 
 class InferenceLoggerConfig:
     """Configuration for an inference logger."""
 
-    def __init__(self, kafka_topic=None, mode="NONE"):
+    def __init__(self, kafka_topic=None, mode=None):
         self._kafka_topic = kafka_topic
-        self._mode = mode
+        self._mode = mode if mode is not None else INFERENCE_LOGGER.MODE
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -33,16 +35,26 @@ class InferenceLoggerConfig:
         return cls.from_json(json_decamelized)
 
     @classmethod
-    def from_json(self, json_decamelized):
-        topic = kafka_topic_config.from_json(json_decamelized.pop("kafka_topic_dto"))
-        return InferenceLoggerConfig(
-            kafka_topic=topic, mode=json_decamelized.pop("inference_logging")
+    def from_json(cls, json_decamelized):
+        return InferenceLoggerConfig(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        topic = (
+            KafkaTopicConfig.from_json(json_decamelized.pop("kafka_topic_dto"))
+            if "kafka_topic_dto" in json_decamelized
+            else None
         )
+        mode = (
+            json_decamelized.pop("inference_logging")
+            if "inference_logging" in json_decamelized
+            else None
+        )
+        return topic, mode
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        topic = kafka_topic_config.from_json(json_decamelized.pop("kafka_topic_dto"))
-        self.__init__(kafka_topic=topic, mode=json_decamelized.pop("inference_logging"))
+        self.__init__(*self.extract_fields_from_json(json_decamelized))
         return self
 
     def json(self):

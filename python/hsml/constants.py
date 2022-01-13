@@ -17,3 +17,22 @@
 
 class MODEL_SERVING:
     MODELS_DATASET = "Models"
+
+
+class RESOURCES:
+    NUM_INSTANCES = 1
+    CORES = 1
+    MEMORY = 1024
+    GPUS = 0
+
+
+class INFERENCE_LOGGER:
+    MODE = "NONE"
+
+
+class INFERENCE_BATCHER:
+    ENABLED = False
+
+
+class PREDICTOR:
+    SERVING_TOOL = "DEFAULT"
