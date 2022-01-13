@@ -58,12 +58,12 @@ class Deployment:
     def get_status(self):
         """Get status of the deployment"""
 
-        return self._serving_api.get_status(self._id)
+        return self._serving_api.get_status(self.id)
 
     def predict(self, data):
         """Send inference requests to this deployment"""
 
-        return self._serving_api.predict(self._id, data)
+        return self._serving_api.predict(self.id, data)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -90,6 +90,11 @@ class Deployment:
 
     def to_dict(self):
         return self._predictor.to_dict()
+
+    @property
+    def id(self):
+        """Id of the deployment."""
+        return self._predictor.id
 
     @property
     def name(self):
