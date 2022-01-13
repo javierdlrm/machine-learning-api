@@ -13,9 +13,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
-
-from hsml import util, predictor
+from hsml import predictor
 
 from hsml.core import serving_api
 
@@ -25,12 +23,15 @@ from hsml.client.exceptions import ModelServingException
 class Deployment:
     """Metadata object representing a deployment in Model Serving."""
 
-    def __init__(self, name, predictor):
-        self._name = name
+    def __init__(self, predictor, name=None):
         self._predictor = predictor
-
-        if predictor is None:
+        if self._predictor is None:
             raise ModelServingException("A predictor is required")
+
+        if name is None:
+            self._name = self._predictor.name
+        else:
+            self._name = self._predictor.name = name
 
         self._serving_api = serving_api.ServingApi()
 
@@ -77,18 +78,18 @@ class Deployment:
 
     @classmethod
     def from_predictor(cls, predictor_instance):
-        return Deployment(name=predictor_instance._name, predictor=predictor_instance)
+        return Deployment(predictor=predictor_instance, name=predictor_instance._name)
 
     def update_from_response_json(self, json_dict):
         self._predictor.update_from_response_json(json_dict)
-        self.__init__(name=self._predictor._name, predictor=self._predictor)
+        self.__init__(predictor=self._predictor, name=self._predictor._name)
         return self
 
     def json(self):
-        return json.dumps(self, cls=util.MLEncoder)
+        return self._predictor.json()
 
     def to_dict(self):
-        return self._predictor.to_dict()
+        return self._predictor.to_dist()
 
     @property
     def name(self):
