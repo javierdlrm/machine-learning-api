@@ -16,9 +16,9 @@
 import json
 
 from hsml import util
-from hsml import predictor
 
 from hsml.core import serving_api
+from hsml.predictor import Predictor
 
 from hsml.client.exceptions import ModelServingException
 
@@ -67,7 +67,7 @@ class Deployment:
 
     @classmethod
     def from_response_json(cls, json_dict):
-        predictors = predictor.from_response_json(json_dict)
+        predictors = Predictor.from_response_json(json_dict)
         if isinstance(predictors, list):
             return [
                 cls.from_predictor(predictor_instance)
