@@ -17,9 +17,9 @@ import humps
 
 from hsml import util
 
-from hsml import resources_config
-from hsml import inference_logger_config
-from hsml import inference_batcher_config
+from hsml.resources_config import ResourcesConfig
+from hsml.inference_logger_config import InferenceLoggerConfig
+from hsml.inference_batcher_config import InferenceBatcherConfig
 
 from hsml.component_config import ComponentConfig
 
@@ -53,24 +53,29 @@ class PredictorConfig(ComponentConfig):
             model_server=json_decamelized.pop("model_server"),
             serving_tool=json_decamelized.pop("serving_tool"),
             script_file=json_decamelized.pop("predictor"),
-            resources_config=resources_config.from_json(
+            resources_config=ResourcesConfig.from_json(
                 json_decamelized, "requested_instances"
             ),
-            inference_logger=inference_logger_config.from_json(json_decamelized),
-            inference_batcher=inference_batcher_config.from_json(json_decamelized),
+            inference_logger=InferenceLoggerConfig.from_json(json_decamelized),
+            inference_batcher=InferenceBatcherConfig.from_json(json_decamelized),
         )
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
+
+        self._resources_config.update_from_response_json(json_decamelized)
+        if self._inference_logger is not None:
+            self._inference_logger.update_from_response_json(json_decamelized)
+        if self._inference_batcher is not None:
+            self._inference_batcher.update_from_response_json(json_decamelized)
+
         self.__init__(
             model_server=json_decamelized.pop("model_server"),
             serving_tool=json_decamelized.pop("serving_tool"),
             script_file=json_decamelized.pop("predictor"),
-            resources_config=resources_config.from_json(
-                json_decamelized, "requested_instances"
-            ),
-            inference_logger=inference_logger_config.from_json(json_decamelized),
-            inference_batcher=inference_batcher_config.from_json(json_decamelized),
+            resources_config=self._resources_config,
+            inference_logger=self._inference_logger,
+            inference_batcher=self._inference_batcher,
         )
         return self
 

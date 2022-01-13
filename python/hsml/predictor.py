@@ -17,8 +17,8 @@ import json
 import humps
 
 from hsml import util
-from hsml import predictor_config
-from hsml import transformer_config
+from hsml.predictor_config import PredictorConfig
+from hsml.transformer_config import TransformerConfig
 
 from hsml.deployment import Deployment
 
@@ -76,8 +76,8 @@ class Predictor:
             model_path=json_decamelized.pop("model_path"),
             model_version=json_decamelized.pop("model_version"),
             artifact_version=json_decamelized.pop("artifact_version"),
-            predictor_config=predictor_config.from_json(json_decamelized),
-            transformer_config=transformer_config.from_json(json_decamelized),
+            predictor_config=PredictorConfig.from_json(json_decamelized),
+            transformer_config=TransformerConfig.from_json(json_decamelized),
             id=json_decamelized.pop("id"),
             created_at=json_decamelized.pop("created_at"),
             creator=json_decamelized.pop("creator"),
@@ -85,14 +85,17 @@ class Predictor:
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
+        self._predictor_config.update_from_response_json(json_decamelized)
+        if self._transformer_config is not None:
+            self._transformer_config.update_from_response_json(json_decamelized)
         self.__init__(
             name=json_decamelized.pop("name"),
             model_name=json_decamelized.pop("model_name"),
             model_path=json_decamelized.pop("model_path"),
             model_version=json_decamelized.pop("model_version"),
             artifact_version=json_decamelized.pop("artifact_version"),
-            predictor_config=predictor_config.from_json(json_decamelized),
-            transformer_config=transformer_config.from_json(json_decamelized),
+            predictor_config=self._predictor_config,
+            transformer_config=self._transformer_config,
             id=json_decamelized.pop("id"),
             created_at=json_decamelized.pop("created_at"),
             creator=json_decamelized.pop("creator"),
