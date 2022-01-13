@@ -41,14 +41,45 @@ class PredictorStatus:
         self._external_ip = external_ip
         self._external_port = external_port
         self._revision = revision
-        self._deployed = deployed
+        self._deployed = deployed if deployed is not None else False
         self._conditions = conditions
         self._status = status
 
     @classmethod
     def from_response_json(cls, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        return PredictorStatus(**json_decamelized)
+        return PredictorStatus(*cls.extract_fields_from_json(json_decamelized))
+
+    @classmethod
+    def extract_fields_from_json(cls, json_decamelized):
+        ai = json_decamelized.pop("available_instances")
+        ati = (
+            json_decamelized.pop("available_transformer_instances")
+            if "available_transformer_instances" in json_decamelized
+            else None
+        )
+        ii = json_decamelized.pop("internal_ips")
+        ip = json_decamelized.pop("internal_path")
+        ei = (
+            json_decamelized.pop("external_ip")
+            if "external_ip" in json_decamelized
+            else None
+        )
+        ep = (
+            json_decamelized.pop("external_port")
+            if "external_port" in json_decamelized
+            else None
+        )
+        r = json_decamelized.pop("revision") if "revision" in json_decamelized else None
+        d = json_decamelized.pop("deployed") if "deployed" in json_decamelized else None
+        c = (
+            json_decamelized.pop("conditions")
+            if "conditions" in json_decamelized
+            else None
+        )
+        s = json_decamelized.pop("status")
+
+        return ai, ati, ii, ip, ei, ep, r, d, c, s
 
     @property
     def available_instances(self):
