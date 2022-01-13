@@ -15,9 +15,8 @@
 
 import json
 
-from hsml import util
+from hsml import util, predictor
 
-from hsml import predictor
 from hsml.core import serving_api
 
 from hsml.client.exceptions import ModelServingException
