@@ -89,7 +89,7 @@ class Deployment:
         return self._predictor.json()
 
     def to_dict(self):
-        return self._predictor.to_dist()
+        return self._predictor.to_dict()
 
     @property
     def name(self):

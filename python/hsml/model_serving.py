@@ -47,6 +47,17 @@ class ModelServing:
 
         return self._serving_api.get(id)
 
+    def get_deployments(self):
+        """Get all deployments from model serving.
+
+        # Returns
+            `List[Deployment]`: A list of deployment metadata objects.
+        # Raises
+            `RestAPIError`: If unable to retrieve deployments from model serving.
+        """
+
+        return self._serving_api.get_all()
+
     def create_predictor(
         self,
         model,

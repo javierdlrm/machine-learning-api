@@ -39,6 +39,18 @@ class ServingApi:
         deployment_json = _client._send_request("GET", path_params)
         return deployment.Deployment.from_response_json(deployment_json)
 
+    def get_all(self):
+        """Get the metadata of all deployments.
+
+        :return: model metadata objects
+        :rtype: List[Deployment]
+        """
+
+        _client = client.get_instance()
+        path_params = ["project", _client._project_id, "serving"]
+        deployments_json = _client._send_request("GET", path_params)
+        return deployment.Deployment.from_response_json(deployments_json)
+
     def put(self, deployment_instance, query_params):
         """Save deployment metadata to model serving.
 
