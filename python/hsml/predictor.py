@@ -86,7 +86,7 @@ class Predictor:
         pc = PredictorConfig.from_json(json_decamelized)
         tc = TransformerConfig.from_json(json_decamelized)
         id = json_decamelized.pop("id")
-        ca = json_decamelized.pop("created_at")
+        ca = json_decamelized.pop("created")
         c = json_decamelized.pop("creator")
         return name, mn, mp, mv, av, pc, tc, id, ca, c
 
