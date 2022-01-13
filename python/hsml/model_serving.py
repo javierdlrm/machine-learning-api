@@ -75,7 +75,7 @@ class ModelServing:
     def create_deployment(self, predictor, name=None):
         """Deploy the model"""
 
-        return Deployment(name, predictor)
+        return Deployment(predictor=predictor, name=name)
 
     @property
     def project_name(self):

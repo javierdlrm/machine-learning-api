@@ -53,7 +53,7 @@ class Predictor:
     def deploy(self):
         """Deploy this predictor of a pre-trained model"""
 
-        deployment = Deployment(self._name, self)
+        deployment = Deployment(predictor=self, name=self._name)
         deployment.save()
 
         return deployment
