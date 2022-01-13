@@ -16,7 +16,10 @@
 import json
 
 from hsml import util
+
+from hsml import predictor
 from hsml.core import serving_api
+
 from hsml.client.exceptions import ModelServingException
 
 
@@ -62,15 +65,20 @@ class Deployment:
 
         return self._serving_api.predict(self._id, data)
 
-    @staticmethod
-    def from_predictor(cls, predictor):
-        if isinstance(predictor, list):
+    @classmethod
+    def from_response_json(cls, json_dict):
+        predictors = predictor.Predictor.from_response_json(json_dict)
+        if isinstance(predictors, list):
             return [
-                Deployment(name=predictor_instance._name, predictor=predictor_instance)
-                for predictor_instance in predictor
+                cls.from_predictor(predictor_instance)
+                for predictor_instance in predictors
             ]
         else:
-            return Deployment(name=predictor._name, predictor=predictor)
+            return cls.from_predictor(predictors)
+
+    @staticmethod
+    def from_predictor(cls, predictor_instance):
+        return Deployment(name=predictor_instance._name, predictor=predictor_instance)
 
     def update_from_response_json(self, json_dict):
         self._predictor.update_from_response_json(json_dict)

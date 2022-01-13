@@ -16,9 +16,8 @@
 
 from hsml import client
 
-from hsml.deployment import Deployment
-from hsml.predictor import Predictor
-from hsml.predictor_status import PredictorStatus
+from hsml import deployment
+from hsml import predictor_status
 
 
 class ServingApi:
@@ -41,8 +40,7 @@ class ServingApi:
             str(id),
         ]
         deployment_json = _client._send_request("GET", path_params)
-        predictor = Predictor.from_response_json(deployment_json)
-        return Deployment.from_predictor(predictor)
+        return deployment.Deployment.from_response_json(deployment_json)
 
     def put(self, deployment_instance, query_params):
         """Save deployment metadata to model serving.
@@ -123,7 +121,7 @@ class ServingApi:
             str(id),
         ]
         deployment_json = _client._send_request("GET", path_params)
-        return PredictorStatus.from_response_json(deployment_json)
+        return predictor_status.PredictorStatus.from_response_json(deployment_json)
 
     def predict(self, name, data):
         """Send inference requests to a deployment with a certain id
