@@ -61,10 +61,10 @@ class Predictor:
     @classmethod
     def from_response_json(cls, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        if "count" in json_decamelized:
-            if json_decamelized["count"] == 0:
+        if isinstance(json_decamelized, list):
+            if len(json_decamelized) == 0:
                 return []
-            return [cls.from_json(predictor) for predictor in json_decamelized["items"]]
+            return [cls.from_json(predictor) for predictor in json_decamelized]
         else:
             return cls.from_json(json_decamelized)
 
