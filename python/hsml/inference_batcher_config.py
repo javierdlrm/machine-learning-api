@@ -33,7 +33,7 @@ class InferenceBatcherConfig:
 
     @classmethod
     def from_json(cls, json_decamelized):
-        return InferenceBatcherConfig(*cls.extract_fields_from_json(json_decamelized))
+        return InferenceBatcherConfig(cls.extract_fields_from_json(json_decamelized))
 
     @classmethod
     def extract_fields_from_json(cls, json_decamelized):
@@ -45,7 +45,7 @@ class InferenceBatcherConfig:
 
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        self.__init__(*self.extract_fields_from_json(json_decamelized))
+        self.__init__(self.extract_fields_from_json(json_decamelized))
         return self
 
     def json(self):
