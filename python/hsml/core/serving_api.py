@@ -62,15 +62,6 @@ class ServingApi:
         _client = client.get_instance()
         path_params = ["project", _client._project_id, "serving"]
         headers = {"content-type": "application/json"}
-        # _client._send_request(
-        #     "PUT",
-        #     path_params,
-        #     headers=headers,
-        #     query_params=query_params,
-        #     data=deployment_instance.json(),
-        # )
-        # return deployment_instance
-        # TODO: (Javier) return updated serving in Hopsworks REST API
         return deployment_instance.update_from_response_json(
             _client._send_request(
                 "PUT",
@@ -113,11 +104,11 @@ class ServingApi:
         ]
         _client._send_request("DELETE", path_params)
 
-    def get_state(self, id):
+    def get_state(self, deployment_instance):
         """Get the state of a deployment with a certain id
 
-        :param id: id of the deployment
-        :type id: int
+        :param deployment_instance: metadata object of the deployment to get state of
+        :type deployment_instance: Deployment
         :return: predictor state
         :rtype: PredictorState
         """
@@ -127,16 +118,16 @@ class ServingApi:
             "project",
             _client._project_id,
             "serving",
-            str(id),
+            str(deployment_instance.id),
         ]
         deployment_json = _client._send_request("GET", path_params)
         return predictor_state.PredictorState.from_response_json(deployment_json)
 
-    def predict(self, name, data):
+    def predict(self, deployment_instance, data):
         """Send inference requests to a deployment with a certain id
 
-        :param name: name of the deployment
-        :type name: str
+        :param deployment_instance: metadata object of the deployment to be used for the prediction
+        :type deployment_instance: Deployment
         :param data: payload of the inference requests
         :type data: dict
         :return: inference response
@@ -149,7 +140,7 @@ class ServingApi:
             _client._project_id,
             "inference",
             "models",
-            name,
+            deployment_instance.name,
             ":predict",
         ]
         headers = {"content-type": "application/json"}

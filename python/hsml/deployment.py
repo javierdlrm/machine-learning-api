@@ -59,14 +59,16 @@ class Deployment:
     def get_state(self):
         """Get state of the deployment"""
 
-        return self._serving_api.get_state(self.id)
+        return self._serving_api.get_state(self)
 
     def predict(self, data):
         """Send inference requests to this deployment"""
 
-        return self._serving_api.predict(self.id, data)
+        return self._serving_api.predict(self, data)
 
     def describe(self):
+        """Print a description of this deployment"""
+
         util.pretty_print(self)
 
     @classmethod
