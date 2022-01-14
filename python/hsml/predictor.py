@@ -16,7 +16,7 @@
 import json
 import humps
 
-from hsml.util import MLEncoder, pretty_print
+from hsml import util
 
 from hsml.deployment import Deployment
 from hsml.predictor_config import PredictorConfig
@@ -59,7 +59,7 @@ class Predictor:
         return deployment
 
     def describe(self):
-        pretty_print(self)
+        util.pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -99,7 +99,7 @@ class Predictor:
         return self
 
     def json(self):
-        return json.dumps(self, cls=MLEncoder)
+        return json.dumps(self, cls=util.MLEncoder)
 
     def to_dict(self):
         json = {

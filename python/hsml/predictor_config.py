@@ -15,7 +15,7 @@
 
 import humps
 
-from hsml.util import get_predictor_config_for_model, pretty_print
+from hsml import util
 
 from hsml.constants import PREDICTOR
 from hsml.component_config import ComponentConfig
@@ -46,11 +46,11 @@ class PredictorConfig(ComponentConfig):
         )
 
     def describe(self):
-        pretty_print(self)
+        util.pretty_print(self)
 
     @classmethod
     def for_model(cls, model):
-        return get_predictor_config_for_model(model)
+        return util.get_predictor_config_for_model(model)
 
     @classmethod
     def from_json(cls, json_decamelized):
