@@ -86,7 +86,7 @@ class ServingApi:
             "serving",
             deployment_instance.id,
         ]
-        query_params = ["action", action]
+        query_params = {"action": action}
         _client._send_request("POST", path_params, query_params=query_params)
 
     def delete(self, deployment_instance):
