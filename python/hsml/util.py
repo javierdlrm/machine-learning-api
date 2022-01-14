@@ -16,6 +16,7 @@
 
 import shutil
 import datetime
+import humps
 
 import numpy as np
 import pandas as pd
@@ -211,4 +212,5 @@ def get_predictor_config_for_model(model):
 
 
 def pretty_print(obj):
-    print(dumps(obj.to_dict(), indent=4, sort_keys=True))
+    json_decamelized = humps.decamelize(obj.to_dict())
+    print(dumps(json_decamelized, indent=4, sort_keys=True))

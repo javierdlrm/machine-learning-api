@@ -91,6 +91,33 @@ class PredictorState:
 
         return ai, ati, ii, iph, ipt, ei, ep, r, d, c, s
 
+    def to_dict(self):
+        json = {
+            "availableInstances": self._available_instances,
+            "internalIPs": self._internal_ips,
+            "internalPath": self._internal_path,
+            "status": self._status,
+        }
+
+        if self._available_transformer_instances is not None:
+            json[
+                "availableTransformerInstances"
+            ] = self._available_transformer_instances
+        if self._internal_port is not None:
+            json["internalPort"] = self._internal_port
+        if self._external_ip is not None:
+            json["externalIP"] = self._external_ip
+        if self._external_port is not None:
+            json["externalPort"] = self.external_port
+        if self._revision is not None:
+            json["revision"] = self._revision
+        if self._deployed is not None:
+            json["deployed"] = self._deployed
+        if self._conditions is not None:
+            json["conditions"] = self._conditions
+
+        return json
+
     @property
     def available_instances(self):
         """Available instances of the predictor."""
