@@ -140,8 +140,7 @@ class ServingApi:
             _client._project_id,
             "inference",
             "models",
-            deployment_instance.name,
-            ":predict",
+            deployment_instance.name + ":predict",
         ]
         headers = {"content-type": "application/json"}
         return _client._send_request("POST", path_params, headers=headers, data=data)
