@@ -60,7 +60,11 @@ class PredictorStatus:
         )
         ii = json_decamelized.pop("internal_ips")
         iph = json_decamelized.pop("internal_path")
-        ipt = json_decamelized.pop("internal_port")
+        ipt = (
+            json_decamelized.pop("internal_port")
+            if "internal_port" in json_decamelized
+            else None
+        )
         ei = (
             json_decamelized.pop("external_ip")
             if "external_ip" in json_decamelized
