@@ -35,10 +35,11 @@ class ServingEngine:
                 if state.status == status:
                     return state
             print(
-                "Deployment has not reach the desired status, set a higher value for await_"
+                "Deployment has not reach the desired status within the expected awaiting time, set a higher value for await_"
                 + status
                 + " to wait longer."
             )
+            return state
 
     def start(self, deployment_instance, await_status):
         pbar = tqdm(
@@ -64,11 +65,13 @@ class ServingEngine:
                 if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                     self._serving_api.post(deployment_instance, DEPLOYMENT.ACTION_START)
                 if step["status"] == PREDICTOR_STATE.STATUS_STARTING:
-                    self._poll_deployment_status(
+                    status = self._poll_deployment_status(
                         deployment_instance,
                         PREDICTOR_STATE.STATUS_RUNNING,
                         await_status,
                     )
+                    if status != PREDICTOR_STATE.STATUS_RUNNING:
+                        return
                 if step["status"] == PREDICTOR_STATE.STATUS_RUNNING:
                     pass
             except BaseException as be:
