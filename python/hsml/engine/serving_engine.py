@@ -65,12 +65,12 @@ class ServingEngine:
                 if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                     self._serving_api.post(deployment_instance, DEPLOYMENT.ACTION_START)
                 if step["status"] == PREDICTOR_STATE.STATUS_STARTING:
-                    status = self._poll_deployment_status(
+                    state = self._poll_deployment_status(
                         deployment_instance,
                         PREDICTOR_STATE.STATUS_RUNNING,
                         await_status,
                     )
-                    if status.upper() != PREDICTOR_STATE.STATUS_RUNNING:
+                    if state.status.upper() != PREDICTOR_STATE.STATUS_RUNNING:
                         return
                 if step["status"] == PREDICTOR_STATE.STATUS_RUNNING:
                     pass
@@ -101,10 +101,10 @@ class ServingEngine:
             if step["status"] == PREDICTOR_STATE.STATUS_RUNNING:
                 self._serving_api.post(deployment_instance, DEPLOYMENT.ACTION_STOP)
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPING:
-                status = self._poll_deployment_status(
+                state = self._poll_deployment_status(
                     deployment_instance, PREDICTOR_STATE.STATUS_STOPPED, await_status
                 )
-                if status.upper() != PREDICTOR_STATE.STATUS_STOPPED:
+                if state.status.upper() != PREDICTOR_STATE.STATUS_STOPPED:
                     return
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                 pass
