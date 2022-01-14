@@ -55,10 +55,10 @@ class Deployment:
 
         self._serving_api.delete(self)
 
-    def get_status(self):
-        """Get status of the deployment"""
+    def get_state(self):
+        """Get state of the deployment"""
 
-        return self._serving_api.get_status(self.id)
+        return self._serving_api.get_state(self.id)
 
     def predict(self, data):
         """Send inference requests to this deployment"""

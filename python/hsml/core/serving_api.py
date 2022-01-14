@@ -14,7 +14,7 @@
 #   limitations under the License.
 #
 
-from hsml import client, deployment, predictor_status
+from hsml import client, deployment, predictor_state
 
 
 class ServingApi:
@@ -113,13 +113,13 @@ class ServingApi:
         ]
         _client._send_request("DELETE", path_params)
 
-    def get_status(self, id):
-        """Get the status of a deployment with a certain id
+    def get_state(self, id):
+        """Get the state of a deployment with a certain id
 
         :param id: id of the deployment
         :type id: int
-        :return: predictor status
-        :rtype: PredictorStatus
+        :return: predictor state
+        :rtype: PredictorState
         """
 
         _client = client.get_instance()
@@ -130,7 +130,7 @@ class ServingApi:
             str(id),
         ]
         deployment_json = _client._send_request("GET", path_params)
-        return predictor_status.PredictorStatus.from_response_json(deployment_json)
+        return predictor_state.PredictorState.from_response_json(deployment_json)
 
     def predict(self, name, data):
         """Send inference requests to a deployment with a certain id

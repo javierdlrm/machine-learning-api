@@ -1,5 +1,5 @@
 #
-#   Copyright 2021 Logical Clocks AB
+#   Copyright 2022 Logical Clocks AB
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 import humps
 
 
-class PredictorStatus:
-    """Status of a Predictor."""
+class PredictorState:
+    """State of a Predictor."""
 
     def __init__(
         self,
@@ -48,7 +48,7 @@ class PredictorStatus:
     @classmethod
     def from_response_json(cls, json_dict):
         json_decamelized = humps.decamelize(json_dict)
-        return PredictorStatus(*cls.extract_fields_from_json(json_decamelized))
+        return PredictorState(*cls.extract_fields_from_json(json_decamelized))
 
     @classmethod
     def extract_fields_from_json(cls, json_decamelized):
