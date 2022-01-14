@@ -13,10 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from hsml import util
 from hsml import predictor
 
 from hsml.core import serving_api
-from hsml.util import pretty_print
 
 from hsml.client.exceptions import ModelServingException
 
@@ -67,7 +67,7 @@ class Deployment:
         return self._serving_api.predict(self.id, data)
 
     def describe(self):
-        pretty_print(self)
+        util.pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):

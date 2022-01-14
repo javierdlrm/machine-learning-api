@@ -15,7 +15,7 @@
 
 import humps
 
-from hsml.util import pretty_print
+from hsml import util
 
 
 class PredictorState:
@@ -48,7 +48,7 @@ class PredictorState:
         self._status = status
 
     def describe(self):
-        pretty_print(self)
+        util.pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
