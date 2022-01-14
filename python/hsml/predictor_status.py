@@ -59,7 +59,8 @@ class PredictorStatus:
             else None
         )
         ii = json_decamelized.pop("internal_ips")
-        ip = json_decamelized.pop("internal_path")
+        iph = json_decamelized.pop("internal_path")
+        ipt = json_decamelized.pop("internal_port")
         ei = (
             json_decamelized.pop("external_ip")
             if "external_ip" in json_decamelized
@@ -79,7 +80,7 @@ class PredictorStatus:
         )
         s = json_decamelized.pop("status")
 
-        return ai, ati, ii, ip, ei, ep, r, d, c, s
+        return ai, ati, ii, iph, ipt, ei, ep, r, d, c, s
 
     @property
     def available_instances(self):
