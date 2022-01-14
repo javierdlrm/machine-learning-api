@@ -17,6 +17,7 @@ from hsml import util
 from hsml import predictor
 
 from hsml.core import serving_api
+from hsml.engine import serving_engine
 
 from hsml.client.exceptions import ModelServingException
 
@@ -35,21 +36,22 @@ class Deployment:
             self._name = self._predictor.name = name
 
         self._serving_api = serving_api.ServingApi()
+        self._serving_engine = serving_engine.ServingEngine()
 
     def save(self):
         """Persist this deployment including the predictor and metadata to model serving."""
 
         self._serving_api.put(self, query_params={})
 
-    def start(self):
+    def start(self, await_running=30):
         """Start this deployment"""
 
-        self._serving_api.post(self, "START")
+        return self._serving_engine.start(self, await_status=await_running)
 
-    def stop(self):
+    def stop(self, await_stopped=30):
         """Stop this deployment"""
 
-        self._serving_api.post(self, "STOP")
+        return self._serving_engine.stop(self, await_status=await_stopped)
 
     def delete(self):
         """Delete this deployment"""

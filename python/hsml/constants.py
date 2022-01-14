@@ -34,5 +34,18 @@ class INFERENCE_BATCHER:
     ENABLED = False
 
 
+class DEPLOYMENT:
+    ACTION_START = "START"
+    ACTION_STOP = "STOP"
+
+
 class PREDICTOR:
     SERVING_TOOL = "DEFAULT"
+
+
+class PREDICTOR_STATE:
+    STATUS_STARTING = "starting"
+    STATUS_RUNNING = "running"
+    STATUS_STOPPING = "stopping"
+    STATUS_STOPPED = "stopped"
+    STATUS_UPDATING = "updating"
