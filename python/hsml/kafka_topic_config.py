@@ -16,7 +16,7 @@
 import json
 import humps
 
-from hsml import util
+from hsml.util import MLEncoder, pretty_print
 
 
 class KafkaTopicConfig:
@@ -26,6 +26,9 @@ class KafkaTopicConfig:
         self._topic_name = topic_name
         self._topic_num_replicas = topic_num_replicas
         self._topic_num_partitions = topic_num_partitions
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -57,7 +60,7 @@ class KafkaTopicConfig:
         return self
 
     def json(self):
-        return json.dumps(self, cls=util.MLEncoder)
+        return json.dumps(self, cls=MLEncoder)
 
     def to_dict(self):
         return {

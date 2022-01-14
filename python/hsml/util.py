@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import os
 
-from json import JSONEncoder
+from json import JSONEncoder, dumps
 
 from hsml.tensorflow.model import Model as TFModel
 from hsml.torch.model import Model as TorchModel
@@ -208,3 +208,7 @@ def get_predictor_config_for_model(model):
         return SkLearnPredictorConfig()
     elif model.framework == "PYTHON":
         return PyPredictorConfig()
+
+
+def pretty_print(obj):
+    print(dumps(obj.to_dict(), indent=4, sort_keys=True))

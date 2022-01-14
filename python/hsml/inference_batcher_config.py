@@ -16,7 +16,7 @@
 import json
 import humps
 
-from hsml import util
+from hsml.util import MLEncoder, pretty_print
 from hsml.constants import INFERENCE_BATCHER
 
 
@@ -25,6 +25,9 @@ class InferenceBatcherConfig:
 
     def __init__(self, enabled=None):
         self._enabled = enabled if enabled is not None else INFERENCE_BATCHER.ENABLED
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -49,7 +52,7 @@ class InferenceBatcherConfig:
         return self
 
     def json(self):
-        return json.dumps(self, cls=util.MLEncoder)
+        return json.dumps(self, cls=MLEncoder)
 
     def to_dict(self):
         return {"batchingEnabled": self._enabled}

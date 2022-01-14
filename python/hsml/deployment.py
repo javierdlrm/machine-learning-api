@@ -16,6 +16,7 @@
 from hsml import predictor
 
 from hsml.core import serving_api
+from hsml.util import pretty_print
 
 from hsml.client.exceptions import ModelServingException
 
@@ -64,6 +65,9 @@ class Deployment:
         """Send inference requests to this deployment"""
 
         return self._serving_api.predict(self.id, data)
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):

@@ -15,6 +15,7 @@
 
 import humps
 
+from hsml.util import pretty_print
 from hsml.component_config import ComponentConfig
 from hsml.resources_config import ResourcesConfig
 from hsml.inference_logger_config import InferenceLoggerConfig
@@ -34,6 +35,9 @@ class TransformerConfig(ComponentConfig):
         super().__init__(
             script_file, resources_config, inference_logger, inference_batcher
         )
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_json(cls, json_decamelized):

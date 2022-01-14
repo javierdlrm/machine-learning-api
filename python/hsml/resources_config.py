@@ -16,7 +16,7 @@
 import json
 import humps
 
-from hsml import util
+from hsml.util import MLEncoder, pretty_print
 from hsml.constants import RESOURCES
 
 
@@ -30,6 +30,9 @@ class ResourcesConfig:
         self._cores = cores if cores is not None else RESOURCES.CORES
         self._memory = memory if memory is not None else RESOURCES.MEMORY
         self._gpus = gpus if gpus is not None else RESOURCES.GPUS
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -66,7 +69,7 @@ class ResourcesConfig:
         return self
 
     def json(self):
-        return json.dumps(self, cls=util.MLEncoder)
+        return json.dumps(self, cls=MLEncoder)
 
     def to_dict(self, num_instances_key):
         return {

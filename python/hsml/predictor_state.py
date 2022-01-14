@@ -15,6 +15,8 @@
 
 import humps
 
+from hsml.util import pretty_print
+
 
 class PredictorState:
     """State of a Predictor."""
@@ -44,6 +46,9 @@ class PredictorState:
         self._deployed = deployed if deployed is not None else False
         self._conditions = conditions
         self._status = status
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):

@@ -16,7 +16,7 @@
 import json
 import humps
 
-from hsml import util
+from hsml.util import MLEncoder, pretty_print
 
 from hsml.constants import INFERENCE_LOGGER
 from hsml.kafka_topic_config import KafkaTopicConfig
@@ -28,6 +28,9 @@ class InferenceLoggerConfig:
     def __init__(self, kafka_topic=None, mode=None):
         self._kafka_topic = kafka_topic
         self._mode = mode if mode is not None else INFERENCE_LOGGER.MODE
+
+    def describe(self):
+        pretty_print(self)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -58,7 +61,7 @@ class InferenceLoggerConfig:
         return self
 
     def json(self):
-        return json.dumps(self, cls=util.MLEncoder)
+        return json.dumps(self, cls=MLEncoder)
 
     def to_dict(self):
         json = {"inferenceLogging": self._mode}
