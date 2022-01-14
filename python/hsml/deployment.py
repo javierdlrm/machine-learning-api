@@ -43,12 +43,12 @@ class Deployment:
 
         self._serving_api.put(self, query_params={})
 
-    def start(self, await_running=30):
+    def start(self, await_running=60):
         """Start this deployment"""
 
         return self._serving_engine.start(self, await_status=await_running)
 
-    def stop(self, await_stopped=30):
+    def stop(self, await_stopped=60):
         """Stop this deployment"""
 
         return self._serving_engine.stop(self, await_status=await_stopped)

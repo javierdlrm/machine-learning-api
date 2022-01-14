@@ -99,7 +99,7 @@ class ServingEngine:
                 self._serving_api.post(deployment_instance, DEPLOYMENT.ACTION_STOP)
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPING:
                 self._poll_deployment_status(
-                    deployment_instance, PREDICTOR_STATE.STATUS_RUNNING, await_status
+                    deployment_instance, PREDICTOR_STATE.STATUS_STOPPED, await_status
                 )
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                 pass
