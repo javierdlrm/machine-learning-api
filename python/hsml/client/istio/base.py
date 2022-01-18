@@ -24,10 +24,11 @@ class Client(base.Client):
     SERVING_API_KEY = "SERVING_API_KEY"
     ISTIO_ENDPOINT = "ISTIO_ENDPOINT"
 
+    BASE_PATH_PARAMS = ["v1", "models"]
+
     @abstractmethod
     def __init__(self):
         """To be implemented by clients."""
-        self._base_path_params = ["v1", "models"]
         pass
 
     def _get_verify(self, verify, trust_store_path):

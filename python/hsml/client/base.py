@@ -85,7 +85,7 @@ class Client(ABC):
         :rtype: dict
         """
         f_url = furl.furl(self._base_url)
-        f_url.path.segments = self._base_path_params + path_params
+        f_url.path.segments = self.BASE_PATH_PARAMS + path_params
         url = str(f_url)
 
         request = requests.Request(

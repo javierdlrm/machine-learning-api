@@ -25,10 +25,11 @@ class Client(base.Client):
     REST_ENDPOINT = "REST_ENDPOINT"
     DEFAULT_DATABRICKS_ROOT_VIRTUALENV_ENV = "DEFAULT_DATABRICKS_ROOT_VIRTUALENV_ENV"
 
+    BASE_PATH_PARAMS = ["hopsworks-api", "api"]
+
     @abstractmethod
     def __init__(self):
         """To be extended by clients."""
-        self._base_path_params = ["hopsworks-api", "api"]
         pass
 
     def _get_verify(self, verify, trust_store_path):
