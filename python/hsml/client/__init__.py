@@ -14,8 +14,7 @@
 #   limitations under the License.
 #
 
-from hsml.client import external
-from hsml.client import internal
+from hsml.client import external, internal
 
 _client = None
 
