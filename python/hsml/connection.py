@@ -173,7 +173,7 @@ class Connection:
         self._connected = True
         try:
             # init client
-            if client.base.Client.REST_ENDPOINT not in os.environ:
+            if client.hopsworks.base.Client.REST_ENDPOINT not in os.environ:
                 client.init(
                     "external",
                     self._host,
