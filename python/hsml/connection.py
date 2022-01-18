@@ -187,7 +187,7 @@ class Connection:
                     self._api_key_value,
                 )
             else:
-                client.init("hopsworks")
+                client.init("internal")
 
             self._model_api = model_api.ModelApi()
         except (TypeError, ConnectionError):

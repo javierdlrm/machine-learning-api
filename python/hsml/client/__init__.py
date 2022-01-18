@@ -14,7 +14,8 @@
 #   limitations under the License.
 #
 
-from hsml.client import external, hopsworks
+from hsml.client import external
+from python.hsml.client import internal
 
 _client = None
 
@@ -33,8 +34,8 @@ def init(
 ):
     global _client
     if not _client:
-        if client_type == "hopsworks":
-            _client = hopsworks.Client()
+        if client_type == "internal":
+            _client = internal.Client()
         elif client_type == "external":
             _client = external.Client(
                 host,
