@@ -15,7 +15,7 @@
 #
 
 from hsml.client import external
-from python.hsml.client import internal
+from hsml.client import internal
 
 _client = None
 
