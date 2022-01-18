@@ -18,10 +18,10 @@ import os
 import requests
 
 from hsml.client import auth
-from hsml.client.hopsworks import base as hopsworks
+from hsml.client.istio import base as istio
 
 
-class Client(hopsworks.Client):
+class Client(istio.Client):
     REQUESTS_VERIFY = "REQUESTS_VERIFY"
     PROJECT_ID = "HOPSWORKS_PROJECT_ID"
     PROJECT_NAME = "HOPSWORKS_PROJECT_NAME"
