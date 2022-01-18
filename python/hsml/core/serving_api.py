@@ -143,7 +143,7 @@ class ServingApi:
         headers = {
             "content-type": "application/json",
             "host": self._get_host_header(
-                _client._project_name(), deployment_instance.name
+                _client._project_name, deployment_instance.name
             ),
         }
 
