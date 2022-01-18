@@ -14,7 +14,9 @@
 #   limitations under the License.
 #
 
-from hsml.client import hopsworks, istio
+from hsml.client.hopsworks import internal as hw_internal
+from hsml.client.hopsworks import external as hw_external
+from hsml.client.istio import internal as is_internal
 
 _hopsworks_client = None
 _istio_client = None
@@ -35,9 +37,9 @@ def init(
     global _hopsworks_client
     if not _hopsworks_client:
         if client_type == "internal":
-            _hopsworks_client = hopsworks.internal.Client()
+            _hopsworks_client = hw_internal.Client()
         elif client_type == "external":
-            _hopsworks_client = hopsworks.external.Client(
+            _hopsworks_client = hw_external.external.Client(
                 host,
                 port,
                 project,
@@ -52,7 +54,7 @@ def init(
     global _istio_client
     if not _istio_client and client_type == "internal":
         _istio_client = (
-            istio.internal.Client()
+            is_internal.Client()
         )  # TODO: Istio client only when internal for now
 
 
