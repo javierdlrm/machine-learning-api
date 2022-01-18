@@ -22,18 +22,15 @@ from hsml.client.istio import base as istio
 
 
 class Client(istio.Client):
-    REQUESTS_VERIFY = "REQUESTS_VERIFY"
     PROJECT_ID = "HOPSWORKS_PROJECT_ID"
     PROJECT_NAME = "HOPSWORKS_PROJECT_NAME"
-    SECRETS_DIR = "SECRETS_DIR"
+    HADOOP_USER_NAME = "HADOOP_USER_NAME"
+    HDFS_USER = "HDFS_USER"
 
     def __init__(self):
         """Initializes a client being run from a job/notebook directly on Hopsworks."""
         self._base_url = self._get_istio_endpoint()
         self._host, self._port = self._get_host_port_pair()
-        self._secrets_dir = (
-            os.environ[self.SECRETS_DIR] if self.SECRETS_DIR in os.environ else ""
-        )
         self._project_id = os.environ[self.PROJECT_ID]
         self._project_name = self._project_name()
         self._auth = auth.ApiKeyAuth(self._get_serving_api_key())
