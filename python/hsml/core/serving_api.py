@@ -14,6 +14,8 @@
 #   limitations under the License.
 #
 
+import json
+
 from hsml import client, deployment, predictor_state
 
 
@@ -144,7 +146,11 @@ class ServingApi:
                 _client._project_name(), deployment_instance.name
             ),
         }
-        return _client._send_request("POST", path_params, headers=headers, data=data)
+
+        json_data = json.dumps(data)
+        return _client._send_request(
+            "POST", path_params, headers=headers, data=json_data
+        )
 
     def _get_host_header(self, project_name, serving_name):
         return "{}.{}.logicalclocks.com".format(
