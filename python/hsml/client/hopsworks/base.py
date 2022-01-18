@@ -27,7 +27,8 @@ class Client(base.Client):
 
     @abstractmethod
     def __init__(self):
-        """To be implemented by clients."""
+        """To be extended by clients."""
+        self._base_path_params = ["hopsworks-api", "api"]
         pass
 
     def _get_verify(self, verify, trust_store_path):
