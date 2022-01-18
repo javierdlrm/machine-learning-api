@@ -101,7 +101,7 @@ class Client(ABC):
         prepped = self._session.prepare_request(request)
         response = self._session.send(prepped, verify=self._verify, stream=stream)
 
-        if self._get_retry(response, request):
+        if self._get_retry(request, response):
             prepped = self._session.prepare_request(request)
             response = self._session.send(prepped, verify=self._verify, stream=stream)
 
