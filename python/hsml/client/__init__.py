@@ -14,9 +14,10 @@
 #   limitations under the License.
 #
 
-from hsml.client import external, internal
+from hsml.client import hopsworks, istio
 
-_client = None
+_hopsworks_client = None
+_istio_client = None
 
 
 def init(
@@ -31,12 +32,12 @@ def init(
     api_key_file=None,
     api_key_value=None,
 ):
-    global _client
-    if not _client:
+    global _hopsworks_client
+    if not _hopsworks_client:
         if client_type == "internal":
-            _client = internal.Client()
+            _hopsworks_client = hopsworks.internal.Client()
         elif client_type == "external":
-            _client = external.Client(
+            _hopsworks_client = hopsworks.external.Client(
                 host,
                 port,
                 project,
@@ -48,15 +49,29 @@ def init(
                 api_key_value,
             )
 
+    global _istio_client
+    if not _istio_client and client_type == "internal":
+        _istio_client = (
+            istio.internal.Client()
+        )  # TODO: Istio client only when internal for now
+
 
 def get_instance():
-    global _client
-    if _client:
-        return _client
+    global _hopsworks_client
+    if _hopsworks_client:
+        return _hopsworks_client
     raise Exception("Couldn't find client. Try reconnecting to Hopsworks.")
 
 
+def get_istio_instance():
+    global _istio_client
+    if _istio_client:
+        return _istio_client
+    raise Exception("Couldn't find the istio client. Try reconnecting to Hopsworks.")
+
+
 def stop():
-    global _client
-    _client._close()
-    _client = None
+    global _hopsworks_client, _istio_client
+    _hopsworks_client._close()
+    _istio_client.close()
+    _hopsworks_client = _istio_client = None

@@ -20,7 +20,8 @@ import textwrap
 import base64
 
 from pathlib import Path
-from hsml.client import hopsworks, auth
+from hsml.client import auth
+from hsml.client.hopsworks import base as hopsworks
 
 try:
     import jks
