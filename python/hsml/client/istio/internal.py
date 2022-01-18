@@ -29,7 +29,7 @@ class Client(istio.Client):
 
     def __init__(self):
         """Initializes a client being run from a job/notebook directly on Hopsworks."""
-        self._base_url = self._get_istio_rest_endpoint()
+        self._base_url = self._get_istio_endpoint()
         self._host, self._port = self._get_host_port_pair()
         self._secrets_dir = (
             os.environ[self.SECRETS_DIR] if self.SECRETS_DIR in os.environ else ""
@@ -41,9 +41,9 @@ class Client(istio.Client):
 
         self._connected = True
 
-    def _get_istio_rest_endpoint(self):
+    def _get_istio_endpoint(self):
         """Get the hopsworks REST endpoint for making requests to the REST API."""
-        return os.environ[self.ISTIO_REST_ENDPOINT]
+        return os.environ[self.ISTIO_ENDPOINT]
 
     def _project_name(self):
         try:
