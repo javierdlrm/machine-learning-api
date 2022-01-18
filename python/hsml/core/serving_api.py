@@ -134,13 +134,19 @@ class ServingApi:
         :rtype: dict
         """
 
-        _client = client.get_instance()
+        _client = client.get_istio_instance()
         path_params = [
-            "project",
-            _client._project_id,
-            "inference",
-            "models",
             deployment_instance.name + ":predict",
         ]
-        headers = {"content-type": "application/json"}
+        headers = {
+            "content-type": "application/json",
+            "host": self._get_host_header(
+                _client._project_name(), deployment_instance.name
+            ),
+        }
         return _client._send_request("POST", path_params, headers=headers, data=data)
+
+    def _get_host_header(self, project_name, serving_name):
+        return "{}.{}.logicalclocks.com".format(
+            serving_name, project_name.replace("_", "-")
+        )
