@@ -17,7 +17,7 @@
 import os
 from abc import abstractmethod
 
-from hsml.client import base
+from hsml.client import base, exceptions
 
 
 class Client(base.Client):
@@ -81,9 +81,9 @@ class Client(base.Client):
 
     def _get_serving_api_key(self):
         """Retrieve serving API key from environment variable."""
-        if self.SERVING_API_KEY in os.environ:
-            return os.environ[self.SERVING_API_KEY]
-        raise ValueError()  # TODO: Change exception
+        if self.SERVING_API_KEY not in os.environ:
+            raise exceptions.ExternalClientError("Serving API key not found")
+        return os.environ[self.SERVING_API_KEY]
 
     def _close(self):
         """Closes a client. Can be implemented for clean up purposes, not mandatory."""

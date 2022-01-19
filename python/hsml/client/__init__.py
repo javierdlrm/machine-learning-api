@@ -55,7 +55,7 @@ def init(
     if not _istio_client and client_type == "internal":
         _istio_client = (
             is_internal.Client()
-        )  # TODO: Istio client only when internal for now
+        )  # TODO: Add external Istio client after adding support for AKS, EKS
 
 
 def get_instance():

@@ -21,7 +21,7 @@ import base64
 
 from pathlib import Path
 
-from hsml.client import auth
+from hsml.client import auth, exceptions
 from hsml.client.istio import base as istio
 
 try:
@@ -67,7 +67,9 @@ class Client(istio.Client):
         self._connected = True
 
     def _get_istio_endpoint(self):
-        """Get the hopsworks REST endpoint for making requests to the REST API."""
+        """Get the istio endpoint for making requests to the ingress gateway."""
+        if self.ISTIO_ENDPOINT not in os.environ:
+            raise exceptions.ExternalClientError("Istio endpoint not found")
         return os.environ[self.ISTIO_ENDPOINT]
 
     def _project_name(self):
