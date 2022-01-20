@@ -18,8 +18,8 @@ import humps
 from typing import Union, Optional
 
 from hsml import util
+from hsml import deployment
 
-from hsml.deployment import Deployment
 from hsml.predictor_config import PredictorConfig
 from hsml.transformer_config import TransformerConfig
 from python.hsml.predictor_state import PredictorState
@@ -55,10 +55,10 @@ class Predictor:
     def deploy(self):
         """Deploy this predictor of a pre-trained model"""
 
-        deployment = Deployment(predictor=self, name=self._name)
-        deployment.save()
+        _deployment = deployment.Deployment(predictor=self, name=self._name)
+        _deployment.save()
 
-        return deployment
+        return _deployment
 
     def set_state(self, state: PredictorState):
         """Set the state of the predictor"""
