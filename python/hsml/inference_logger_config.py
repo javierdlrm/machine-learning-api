@@ -15,6 +15,7 @@
 
 import json
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -25,7 +26,9 @@ from hsml.kafka_topic_config import KafkaTopicConfig
 class InferenceLoggerConfig:
     """Configuration for an inference logger."""
 
-    def __init__(self, kafka_topic=None, mode=None):
+    def __init__(
+        self, kafka_topic: Optional[KafkaTopicConfig] = None, mode: Optional[str] = None
+    ):
         self._kafka_topic = kafka_topic
         self._mode = mode if mode is not None else INFERENCE_LOGGER.MODE
 
@@ -75,7 +78,7 @@ class InferenceLoggerConfig:
         return self._kafka_topic
 
     @kafka_topic.setter
-    def kafka_topic(self, kafka_topic):
+    def kafka_topic(self, kafka_topic: KafkaTopicConfig):
         self._kafka_topic = kafka_topic
 
     @property
@@ -84,5 +87,5 @@ class InferenceLoggerConfig:
         return self._mode
 
     @mode.setter
-    def mode(self, mode):
+    def mode(self, mode: str):
         self._mode = mode

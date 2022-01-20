@@ -14,17 +14,25 @@
 #   limitations under the License.
 #
 
+from typing import Union, Optional
 
 from hsml.core import serving_api
+from hsml.model import Model
 from hsml.predictor import Predictor
 from hsml.predictor_config import PredictorConfig
 from hsml.deployment import Deployment
+from python.hsml.transformer_config import TransformerConfig
 
 
 class ModelServing:
     DEFAULT_VERSION = 1
 
-    def __init__(self, project_name, project_id, shared_registry_project=None):
+    def __init__(
+        self,
+        project_name: str,
+        project_id: int,
+        shared_registry_project: Optional[str] = None,
+    ):
         self._project_name = project_name
         self._project_id = project_id
 
@@ -32,7 +40,7 @@ class ModelServing:
 
         self._serving_api = serving_api.ServingApi()
 
-    def get_deployment(self, id):
+    def get_deployment(self, id: int):
         """Get a deployment entity from model serving.
         Getting a deployment from Model Serving means getting its metadata handle
         so you can subsequently operate on it (e.g., start or stop).
@@ -47,6 +55,21 @@ class ModelServing:
 
         return self._serving_api.get(id)
 
+    def get_deployment_by_name(self, name: str):
+        """Get a deployment entity from model serving by name.
+        Getting a deployment from Model Serving means getting its metadata handle
+        so you can subsequently operate on it (e.g., start or stop).
+
+        # Arguments
+            name: Name of the deployment to get.
+        # Returns
+            `Deployment`: The deployment metadata object.
+        # Raises
+            `RestAPIError`: If unable to retrieve deployment from model serving.
+        """
+
+        return self._serving_api.get_by_name(name)
+
     def get_deployments(self):
         """Get all deployments from model serving.
 
@@ -60,11 +83,11 @@ class ModelServing:
 
     def create_predictor(
         self,
-        model,
-        name=None,
-        artifact_version="CREATE",
-        predictor_config=None,
-        transformer_config=None,
+        model: Model,
+        name: Optional[str] = None,
+        artifact_version: Union[int, str] = "CREATE",
+        predictor_config: PredictorConfig = None,
+        transformer_config: TransformerConfig = None,
     ):
         """Deploy the model"""
 
@@ -83,7 +106,7 @@ class ModelServing:
             transformer_config=transformer_config,
         )
 
-    def create_deployment(self, predictor, name=None):
+    def create_deployment(self, predictor: Predictor, name: Optional[str] = None):
         """Deploy the model"""
 
         return Deployment(predictor=predictor, name=name)

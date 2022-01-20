@@ -14,6 +14,7 @@
 #   limitations under the License.
 
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -28,10 +29,10 @@ class TransformerConfig(ComponentConfig):
 
     def __init__(
         self,
-        script_file,
-        resources_config=None,
-        inference_logger=None,
-        inference_batcher=None,
+        script_file: str,
+        resources_config: Optional[ResourcesConfig] = None,
+        inference_logger: Optional[InferenceLoggerConfig] = None,
+        inference_batcher: Optional[InferenceBatcherConfig] = None,
     ):
         super().__init__(
             script_file, resources_config, inference_logger, inference_batcher

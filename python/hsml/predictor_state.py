@@ -14,6 +14,7 @@
 #   limitations under the License.
 
 import humps
+from typing import List, Optional
 
 from hsml import util
 
@@ -23,17 +24,17 @@ class PredictorState:
 
     def __init__(
         self,
-        available_instances,
-        available_transformer_instances,
-        internal_ips,
-        internal_path,
-        internal_port,
-        external_ip,
-        external_port,
-        revision,
-        deployed,
-        conditions,
-        status,
+        available_instances: int,
+        available_transformer_instances: Optional[int],
+        internal_ips: List[str],
+        internal_path: str,
+        internal_port: Optional[int],
+        external_ip: Optional[str],
+        external_port: Optional[int],
+        revision: Optional[int],
+        deployed: Optional[bool],
+        conditions: Optional[List[str]],
+        status: str,
     ):
         self._available_instances = available_instances
         self._available_transformer_instances = available_transformer_instances

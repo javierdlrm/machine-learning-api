@@ -15,6 +15,7 @@
 
 import json
 import humps
+from typing import Optional
 
 from abc import abstractclassmethod, abstractmethod
 
@@ -30,10 +31,10 @@ class ComponentConfig:
 
     def __init__(
         self,
-        script_file=None,
-        resources_config=None,
-        inference_logger=None,
-        inference_batcher=None,
+        script_file: Optional[str] = None,
+        resources_config: Optional[ResourcesConfig] = None,
+        inference_logger: Optional[InferenceLoggerConfig] = None,
+        inference_batcher: Optional[InferenceBatcherConfig] = None,
     ):
         self._script_file = script_file
         self._resources_config = (
@@ -79,7 +80,7 @@ class ComponentConfig:
         return self._script_file
 
     @script_file.setter
-    def script_file(self, script_file):
+    def script_file(self, script_file: str):
         self._script_file = script_file
 
     @property
@@ -88,7 +89,7 @@ class ComponentConfig:
         return self._resources_config
 
     @resources_config.setter
-    def resources_config(self, resources_config):
+    def resources_config(self, resources_config: ResourcesConfig):
         self._resources_config = resources_config
 
     @property
@@ -97,7 +98,7 @@ class ComponentConfig:
         return self._inference_logger
 
     @inference_logger.setter
-    def inference_logger(self, inference_logger):
+    def inference_logger(self, inference_logger: InferenceLoggerConfig):
         self._inference_logger = inference_logger
 
     @property
@@ -106,5 +107,5 @@ class ComponentConfig:
         return self._inference_batcher
 
     @inference_batcher.setter
-    def inference_batcher(self, inference_batcher):
+    def inference_batcher(self, inference_batcher: InferenceBatcherConfig):
         self._inference_batcher = inference_batcher

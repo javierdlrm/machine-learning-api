@@ -19,17 +19,20 @@ import time
 from tqdm.auto import tqdm
 
 from hsml.core import serving_api
-from hsml.constants import PREDICTOR_STATE, DEPLOYMENT
+from hsml.constants import DEPLOYMENT, PREDICTOR, PREDICTOR_STATE
+from hsml.deployment import Deployment
 
 
 class ServingEngine:
     def __init__(self):
         self._serving_api = serving_api.ServingApi()
 
-    def _poll_deployment_status(self, deployment_instance, status, await_status):
+    def _poll_deployment_status(
+        self, deployment_instance: Deployment, status: str, await_status: int
+    ):
         if await_status > 0:
             sleep_seconds = 5
-            for i in range(int(await_status / sleep_seconds)):
+            for _ in range(int(await_status / sleep_seconds)):
                 time.sleep(sleep_seconds)
                 state = deployment_instance.get_state()
                 if state.status.upper() == status:
@@ -39,9 +42,8 @@ class ServingEngine:
                 + status.lower()
                 + " to wait longer."
             )
-            return state
 
-    def start(self, deployment_instance, await_status):
+    def start(self, deployment_instance: Deployment, await_status: int):
         pbar = tqdm(
             [
                 {
@@ -78,7 +80,7 @@ class ServingEngine:
                 self.stop(self, deployment_instance, await_status=0)
                 raise be
 
-    def stop(self, deployment_instance, await_status):
+    def stop(self, deployment_instance: Deployment, await_status: int):
         pbar = tqdm(
             [
                 {
@@ -108,3 +110,12 @@ class ServingEngine:
                     return
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                 pass
+
+    def predict(self, deployment_instance: Deployment, data: dict):
+        serving_tool = deployment_instance.predictor.predictor_config.serving_tool
+        through_hopsworks = (
+            serving_tool == PREDICTOR.SERVING_TOOL_KFSERVING
+        )  # if KFServing, send request to istio
+        return self._serving_api.send_inference_request(
+            deployment_instance, data, through_hopsworks
+        )

@@ -14,9 +14,12 @@
 #   limitations under the License.
 #
 
+from hsml.client.hopsworks import base as hw_base
 from hsml.client.hopsworks import internal as hw_internal
 from hsml.client.hopsworks import external as hw_external
-from hsml.client.istio import internal as is_internal
+
+from hsml.client.istio import base as ist_base
+from hsml.client.istio import internal as ist_internal
 
 _hopsworks_client = None
 _istio_client = None
@@ -54,18 +57,18 @@ def init(
     global _istio_client
     if not _istio_client and client_type == "internal":
         _istio_client = (
-            is_internal.Client()
+            ist_internal.Client()
         )  # TODO: Add external Istio client after adding support for AKS, EKS
 
 
-def get_instance():
+def get_instance() -> hw_base.Client:
     global _hopsworks_client
     if _hopsworks_client:
         return _hopsworks_client
     raise Exception("Couldn't find client. Try reconnecting to Hopsworks.")
 
 
-def get_istio_instance():
+def get_istio_instance() -> ist_base.Client:
     global _istio_client
     if _istio_client:
         return _istio_client

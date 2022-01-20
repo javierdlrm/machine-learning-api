@@ -15,12 +15,14 @@
 
 import json
 import humps
+from typing import Union, Optional
 
 from hsml import util
 
 from hsml.deployment import Deployment
 from hsml.predictor_config import PredictorConfig
 from hsml.transformer_config import TransformerConfig
+from python.hsml.predictor_state import PredictorState
 
 
 class Predictor:
@@ -28,16 +30,16 @@ class Predictor:
 
     def __init__(
         self,
-        name,
-        model_name,
-        model_path,
-        model_version,
-        artifact_version,
-        predictor_config,
-        transformer_config=None,
-        id=None,
-        created_at=None,
-        creator=None,
+        name: str,
+        model_name: str,
+        model_path: str,
+        model_version: int,
+        artifact_version: Union[int, str],
+        predictor_config: PredictorConfig,
+        transformer_config: Optional[TransformerConfig] = None,
+        id: Optional[int] = None,
+        created_at: Optional[str] = None,
+        creator: Optional[str] = None,
     ):
         self._name = name
         self._model_name = model_name
@@ -58,6 +60,11 @@ class Predictor:
 
         return deployment
 
+    def set_state(self, state: PredictorState):
+        """Set the state of the predictor"""
+
+        self._state = state
+
     def describe(self):
         util.pretty_print(self)
 
@@ -73,7 +80,9 @@ class Predictor:
 
     @classmethod
     def from_json(cls, json_decamelized):
-        return Predictor(*cls.extract_fields_from_json(json_decamelized))
+        predictor = Predictor(*cls.extract_fields_from_json(json_decamelized))
+        predictor.set_state(PredictorState.from_response_json(json_decamelized))
+        return predictor
 
     @classmethod
     def extract_fields_from_json(cls, json_decamelized):
@@ -96,6 +105,7 @@ class Predictor:
     def update_from_response_json(self, json_dict):
         json_decamelized = humps.decamelize(json_dict)
         self.__init__(*self.extract_fields_from_json(json_decamelized))
+        self.set_state(PredictorState.from_response_json(json_decamelized))
         return self
 
     def json(self):
@@ -128,7 +138,7 @@ class Predictor:
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         self._name = name
 
     @property
@@ -137,7 +147,7 @@ class Predictor:
         return self._model_name
 
     @model_name.setter
-    def model_name(self, model_name):
+    def model_name(self, model_name: str):
         self._model_name = model_name
 
     @property
@@ -146,7 +156,7 @@ class Predictor:
         return self._model_path
 
     @model_path.setter
-    def model_path(self, model_path):
+    def model_path(self, model_path: str):
         self._model_path = model_path
 
     @property
@@ -155,7 +165,7 @@ class Predictor:
         return self._model_version
 
     @model_version.setter
-    def model_version(self, model_version):
+    def model_version(self, model_version: int):
         self._model_version = model_version
 
     @property
@@ -164,7 +174,7 @@ class Predictor:
         return self._artifact_version
 
     @artifact_version.setter
-    def artifact_version(self, artifact_version):
+    def artifact_version(self, artifact_version: Union[int, str]):
         self._artifact_version = artifact_version
 
     @property
@@ -173,7 +183,7 @@ class Predictor:
         return self._predictor_config
 
     @predictor_config.setter
-    def predictor_config(self, predictor_config):
+    def predictor_config(self, predictor_config: PredictorConfig):
         self._predictor_config = predictor_config
 
     @property
@@ -182,7 +192,7 @@ class Predictor:
         return self._transformer_config
 
     @transformer_config.setter
-    def transformer_config(self, transformer_config):
+    def transformer_config(self, transformer_config: TransformerConfig):
         self._transformer_config = transformer_config
 
     @property

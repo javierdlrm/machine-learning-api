@@ -24,7 +24,7 @@ class Client(base.Client):
     SERVING_API_KEY = "SERVING_API_KEY"
     ISTIO_ENDPOINT = "ISTIO_ENDPOINT"
 
-    BASE_PATH_PARAMS = ["v1", "models"]
+    BASE_PATH_PARAMS = []
 
     @abstractmethod
     def __init__(self):

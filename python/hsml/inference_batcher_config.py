@@ -15,6 +15,7 @@
 
 import json
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -24,7 +25,7 @@ from hsml.constants import INFERENCE_BATCHER
 class InferenceBatcherConfig:
     """Configuration for an inference batcher."""
 
-    def __init__(self, enabled=None):
+    def __init__(self, enabled: Optional[bool] = None):
         self._enabled = enabled if enabled is not None else INFERENCE_BATCHER.ENABLED
 
     def describe(self):
@@ -64,5 +65,5 @@ class InferenceBatcherConfig:
         return self._enabled
 
     @enabled.setter
-    def enabled(self, enabled):
+    def enabled(self, enabled: bool):
         self._enabled = enabled

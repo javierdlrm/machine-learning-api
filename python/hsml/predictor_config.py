@@ -14,6 +14,7 @@
 #   limitations under the License.
 
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -29,12 +30,12 @@ class PredictorConfig(ComponentConfig):
 
     def __init__(
         self,
-        model_server,
-        serving_tool=None,
-        script_file=None,
-        resources_config=None,
-        inference_logger=None,
-        inference_batcher=None,
+        model_server: str,
+        serving_tool: Optional[str] = None,
+        script_file: Optional[str] = None,
+        resources_config: Optional[ResourcesConfig] = None,
+        inference_logger: Optional[InferenceLoggerConfig] = None,
+        inference_batcher: Optional[InferenceBatcherConfig] = None,
     ):
         super().__init__(
             script_file, resources_config, inference_logger, inference_batcher
@@ -95,7 +96,7 @@ class PredictorConfig(ComponentConfig):
         return self._model_server
 
     @model_server.setter
-    def model_server(self, model_server):
+    def model_server(self, model_server: str):
         self._model_server = model_server
 
     @property
@@ -104,5 +105,5 @@ class PredictorConfig(ComponentConfig):
         return self._serving_tool
 
     @serving_tool.setter
-    def serving_tool(self, serving_tool):
+    def serving_tool(self, serving_tool: str):
         self._serving_tool = serving_tool

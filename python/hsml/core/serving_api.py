@@ -23,7 +23,7 @@ class ServingApi:
     def __init__(self):
         pass
 
-    def get(self, id):
+    def get(self, id: int):
         """Get the metadata of a deployment with a certain id.
 
         :param id: id of the deployment
@@ -41,6 +41,24 @@ class ServingApi:
         deployment_json = _client._send_request("GET", path_params)
         return deployment.Deployment.from_response_json(deployment_json)
 
+    def get_by_name(self, name: str):
+        """Get the metadata of a deployment with a certain name.
+
+        :param name: name of the deployment
+        :type name: str
+        :return: deployment metadata object
+        :rtype: Deployment
+        """
+        _client = client.get_instance()
+        path_params = [
+            "project",
+            _client._project_id,
+            "serving",
+            name,  # TODO: Add endpoint in the backend for filtering by name
+        ]
+        deployment_json = _client._send_request("GET", path_params)
+        return deployment.Deployment.from_response_json(deployment_json)
+
     def get_all(self):
         """Get the metadata of all deployments.
 
@@ -53,7 +71,7 @@ class ServingApi:
         deployments_json = _client._send_request("GET", path_params)
         return deployment.Deployment.from_response_json(deployments_json)
 
-    def put(self, deployment_instance, query_params):
+    def put(self, deployment_instance: deployment.Deployment, query_params: dict):
         """Save deployment metadata to model serving.
 
         :param deployment_instance: metadata object of deployment to be saved
@@ -74,7 +92,7 @@ class ServingApi:
             )
         )
 
-    def post(self, deployment_instance, action):
+    def post(self, deployment_instance: deployment.Deployment, action: str):
         """Perform an action on the deployment
 
         :param action: action to perform on the deployment (i.e., START or STOP)
@@ -91,7 +109,7 @@ class ServingApi:
         query_params = {"action": action}
         _client._send_request("POST", path_params, query_params=query_params)
 
-    def delete(self, deployment_instance):
+    def delete(self, deployment_instance: deployment.Deployment):
         """Delete the deployment and metadata.
 
         :param deployment_instance: metadata object of the deployment to delete
@@ -106,8 +124,8 @@ class ServingApi:
         ]
         _client._send_request("DELETE", path_params)
 
-    def get_state(self, deployment_instance):
-        """Get the state of a deployment with a certain id
+    def get_state(self, deployment_instance: deployment.Deployment):
+        """Get the state of a given deployment
 
         :param deployment_instance: metadata object of the deployment to get state of
         :type deployment_instance: Deployment
@@ -125,34 +143,57 @@ class ServingApi:
         deployment_json = _client._send_request("GET", path_params)
         return predictor_state.PredictorState.from_response_json(deployment_json)
 
-    def predict(self, deployment_instance, data):
+    def send_inference_request(
+        self,
+        deployment_instance: deployment.Deployment,
+        data: dict,
+        through_hopsworks: bool = False,
+    ):
         """Send inference requests to a deployment with a certain id
 
         :param deployment_instance: metadata object of the deployment to be used for the prediction
         :type deployment_instance: Deployment
         :param data: payload of the inference requests
         :type data: dict
+        :param through_hopsworks: whether to send the inference request through the Hopsworks REST API
+        :type through_hopsworks: bool
         :return: inference response
         :rtype: dict
         """
 
-        _client = client.get_istio_instance()
-        path_params = [
-            deployment_instance.name + ":predict",
-        ]
-        headers = {
-            "content-type": "application/json",
-            "host": self._get_host_header(
+        headers = {"content-type": "application/json"}
+        if through_hopsworks:
+            _client = client.get_instance()
+            path_params = self._get_hopsworks_inference_path(
+                _client._project_id, deployment_instance
+            )
+        else:
+            _client = client.get_istio_instance()
+            path_params = self._get_istio_inference_path(deployment_instance)
+            # add host header
+            headers["host"] = self._get_inference_request_host_header(
                 _client._project_name, deployment_instance.name
-            ),
-        }
+            )
 
-        json_data = json.dumps(data)
         return _client._send_request(
-            "POST", path_params, headers=headers, data=json_data
+            "POST", path_params, headers=headers, data=json.dumps(data)
         )
 
-    def _get_host_header(self, project_name, serving_name):
+    def _get_inference_request_host_header(self, project_name: str, serving_name: str):
         return "{}.{}.logicalclocks.com".format(
             serving_name, project_name.replace("_", "-")
         )
+
+    def _get_hopsworks_inference_path(
+        self, project_id: int, deployment_instance: deployment.Deployment
+    ):
+        return [
+            "project",
+            project_id,
+            "inference",
+            "models",
+            deployment_instance.name + ":predict",
+        ]
+
+    def _get_istio_inference_path(self, deployment_instance: deployment.Deployment):
+        return ["v1", "models", deployment_instance.name + ":predict"]

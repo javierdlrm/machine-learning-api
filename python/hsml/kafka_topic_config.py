@@ -15,6 +15,7 @@
 
 import json
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -22,7 +23,12 @@ from hsml import util
 class KafkaTopicConfig:
     """Configuration for a Kafka topic."""
 
-    def __init__(self, topic_name, topic_num_replicas=None, topic_num_partitions=None):
+    def __init__(
+        self,
+        topic_name: str,
+        topic_num_replicas: Optional[int] = None,
+        topic_num_partitions: Optional[int] = None,
+    ):
         self._topic_name = topic_name
         self._topic_num_replicas = topic_num_replicas
         self._topic_num_partitions = topic_num_partitions
@@ -77,7 +83,7 @@ class KafkaTopicConfig:
         return self._topic_name
 
     @topic_name.setter
-    def topic_name(self, topic_name):
+    def topic_name(self, topic_name: str):
         self._topic_name = topic_name
 
     @property
@@ -86,7 +92,7 @@ class KafkaTopicConfig:
         return self._topic_num_replicas
 
     @topic_num_replicas.setter
-    def topic_num_replicas(self, topic_num_replicas):
+    def topic_num_replicas(self, topic_num_replicas: int):
         self._topic_num_replicas = topic_num_replicas
 
     @property
@@ -95,5 +101,5 @@ class KafkaTopicConfig:
         return self._topic_num_partitions
 
     @topic_num_partitions.setter
-    def topic_num_partitions(self, topic_num_partitions):
+    def topic_num_partitions(self, topic_num_partitions: int):
         self._topic_num_partitions = topic_num_partitions

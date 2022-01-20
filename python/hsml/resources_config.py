@@ -15,6 +15,7 @@
 
 import json
 import humps
+from typing import Optional
 
 from hsml import util
 
@@ -24,7 +25,13 @@ from hsml.constants import RESOURCES
 class ResourcesConfig:
     """Resources configuration for predictors and transformers."""
 
-    def __init__(self, num_instances=None, cores=None, memory=None, gpus=None):
+    def __init__(
+        self,
+        num_instances: Optional[int] = None,
+        cores: Optional[int] = None,
+        memory: Optional[int] = None,
+        gpus: Optional[int] = None,
+    ):
         self._num_instances = (
             num_instances if num_instances is not None else RESOURCES.NUM_INSTANCES
         )
@@ -88,7 +95,7 @@ class ResourcesConfig:
         return self._num_instances
 
     @num_instances.setter
-    def num_instances(self, num_instances):
+    def num_instances(self, num_instances: int):
         self._num_instances = num_instances
 
     @property
@@ -97,7 +104,7 @@ class ResourcesConfig:
         return self._cores
 
     @cores.setter
-    def cores(self, cores):
+    def cores(self, cores: int):
         self._cores = cores
 
     @property
@@ -106,7 +113,7 @@ class ResourcesConfig:
         return self._memory
 
     @memory.setter
-    def memory(self, memory):
+    def memory(self, memory: int):
         self._memory = memory
 
     @property
@@ -115,5 +122,5 @@ class ResourcesConfig:
         return self._gpus
 
     @gpus.setter
-    def gpus(self, gpus):
+    def gpus(self, gpus: int):
         self._gpus = gpus

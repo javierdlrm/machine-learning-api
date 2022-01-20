@@ -13,11 +13,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from typing import Optional
+
 from hsml import util
-from hsml import predictor
 
 from hsml.core import serving_api
 from hsml.engine import serving_engine
+from hsml.predictor import Predictor
 
 from hsml.client.exceptions import ModelServingException
 
@@ -25,12 +27,14 @@ from hsml.client.exceptions import ModelServingException
 class Deployment:
     """Metadata object representing a deployment in Model Serving."""
 
-    def __init__(self, predictor, name=None):
+    def __init__(self, predictor: Predictor, name: Optional[str] = None):
         self._predictor = predictor
+        self._name = name
+
         if self._predictor is None:
             raise ModelServingException("A predictor is required")
 
-        if name is None:
+        if self._name is None:
             self._name = self._predictor.name
         else:
             self._name = self._predictor.name = name
@@ -43,12 +47,12 @@ class Deployment:
 
         self._serving_api.put(self, query_params={})
 
-    def start(self, await_running=60):
+    def start(self, await_running: Optional[int] = 60):
         """Start this deployment"""
 
         return self._serving_engine.start(self, await_status=await_running)
 
-    def stop(self, await_stopped=60):
+    def stop(self, await_stopped: Optional[int] = 60):
         """Stop this deployment"""
 
         return self._serving_engine.stop(self, await_status=await_stopped)
@@ -59,14 +63,16 @@ class Deployment:
         self._serving_api.delete(self)
 
     def get_state(self):
-        """Get state of the deployment"""
+        """Get the current state of the deployment"""
 
-        return self._serving_api.get_state(self)
+        state = self._serving_api.get_state(self)
+        self.predictor.set_state(state)
+        return state
 
-    def predict(self, data):
+    def predict(self, data: dict):
         """Send inference requests to this deployment"""
 
-        return self._serving_api.predict(self, data)
+        return self._serving_engine.predict(self, data)
 
     def describe(self):
         """Print a description of this deployment"""
@@ -75,7 +81,7 @@ class Deployment:
 
     @classmethod
     def from_response_json(cls, json_dict):
-        predictors = predictor.Predictor.from_response_json(json_dict)
+        predictors = Predictor.from_response_json(json_dict)
         if isinstance(predictors, list):
             return [
                 cls.from_predictor(predictor_instance)
@@ -110,7 +116,7 @@ class Deployment:
         return self._name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str):
         self._name = name
 
     @property
@@ -119,5 +125,5 @@ class Deployment:
         return self._predictor
 
     @predictor.setter
-    def predictor(self, predictor):
+    def predictor(self, predictor: Predictor):
         self._predictor = predictor
