@@ -20,7 +20,6 @@ from tqdm.auto import tqdm
 
 from hsml.core import serving_api
 from hsml.constants import DEPLOYMENT, PREDICTOR, PREDICTOR_STATE
-from hsml.deployment import Deployment
 
 
 class ServingEngine:
@@ -28,7 +27,7 @@ class ServingEngine:
         self._serving_api = serving_api.ServingApi()
 
     def _poll_deployment_status(
-        self, deployment_instance: Deployment, status: str, await_status: int
+        self, deployment_instance, status: str, await_status: int
     ):
         if await_status > 0:
             sleep_seconds = 5
@@ -43,7 +42,7 @@ class ServingEngine:
                 + " to wait longer."
             )
 
-    def start(self, deployment_instance: Deployment, await_status: int):
+    def start(self, deployment_instance, await_status: int):
         pbar = tqdm(
             [
                 {
@@ -80,7 +79,7 @@ class ServingEngine:
                 self.stop(self, deployment_instance, await_status=0)
                 raise be
 
-    def stop(self, deployment_instance: Deployment, await_status: int):
+    def stop(self, deployment_instance, await_status: int):
         pbar = tqdm(
             [
                 {
@@ -111,7 +110,7 @@ class ServingEngine:
             if step["status"] == PREDICTOR_STATE.STATUS_STOPPED:
                 pass
 
-    def predict(self, deployment_instance: Deployment, data: dict):
+    def predict(self, deployment_instance, data: dict):
         serving_tool = deployment_instance.predictor.predictor_config.serving_tool
         through_hopsworks = (
             serving_tool == PREDICTOR.SERVING_TOOL_KFSERVING
