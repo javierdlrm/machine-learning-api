@@ -16,10 +16,10 @@
 from typing import Optional
 
 from hsml import util
+from hsml import predictor
 
 from hsml.core import serving_api
 from hsml.engine import serving_engine
-from hsml.predictor import Predictor
 
 from hsml.client.exceptions import ModelServingException
 
@@ -27,7 +27,7 @@ from hsml.client.exceptions import ModelServingException
 class Deployment:
     """Metadata object representing a deployment in Model Serving."""
 
-    def __init__(self, predictor: Predictor, name: Optional[str] = None):
+    def __init__(self, predictor, name: Optional[str] = None):
         self._predictor = predictor
         self._name = name
 
@@ -81,7 +81,7 @@ class Deployment:
 
     @classmethod
     def from_response_json(cls, json_dict):
-        predictors = Predictor.from_response_json(json_dict)
+        predictors = predictor.Predictor.from_response_json(json_dict)
         if isinstance(predictors, list):
             return [
                 cls.from_predictor(predictor_instance)
@@ -125,5 +125,5 @@ class Deployment:
         return self._predictor
 
     @predictor.setter
-    def predictor(self, predictor: Predictor):
+    def predictor(self, predictor):
         self._predictor = predictor
