@@ -193,5 +193,5 @@ class ServingApi:
             deployment_instance.name + ":predict",
         ]
 
-    def _get_istio_inference_path(self, deployment_instance: deployment.Deployment):
+    def _get_istio_inference_path(self, deployment_instance):
         return ["v1", "models", deployment_instance.name + ":predict"]
