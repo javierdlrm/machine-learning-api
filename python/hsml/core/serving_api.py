@@ -71,7 +71,7 @@ class ServingApi:
         deployments_json = _client._send_request("GET", path_params)
         return deployment.Deployment.from_response_json(deployments_json)
 
-    def put(self, deployment_instance: deployment.Deployment, query_params: dict):
+    def put(self, deployment_instance, query_params: dict):
         """Save deployment metadata to model serving.
 
         :param deployment_instance: metadata object of deployment to be saved
@@ -92,7 +92,7 @@ class ServingApi:
             )
         )
 
-    def post(self, deployment_instance: deployment.Deployment, action: str):
+    def post(self, deployment_instance, action: str):
         """Perform an action on the deployment
 
         :param action: action to perform on the deployment (i.e., START or STOP)
@@ -109,7 +109,7 @@ class ServingApi:
         query_params = {"action": action}
         _client._send_request("POST", path_params, query_params=query_params)
 
-    def delete(self, deployment_instance: deployment.Deployment):
+    def delete(self, deployment_instance):
         """Delete the deployment and metadata.
 
         :param deployment_instance: metadata object of the deployment to delete
@@ -124,7 +124,7 @@ class ServingApi:
         ]
         _client._send_request("DELETE", path_params)
 
-    def get_state(self, deployment_instance: deployment.Deployment):
+    def get_state(self, deployment_instance):
         """Get the state of a given deployment
 
         :param deployment_instance: metadata object of the deployment to get state of
@@ -145,7 +145,7 @@ class ServingApi:
 
     def send_inference_request(
         self,
-        deployment_instance: deployment.Deployment,
+        deployment_instance,
         data: dict,
         through_hopsworks: bool = False,
     ):
@@ -184,9 +184,7 @@ class ServingApi:
             serving_name, project_name.replace("_", "-")
         )
 
-    def _get_hopsworks_inference_path(
-        self, project_id: int, deployment_instance: deployment.Deployment
-    ):
+    def _get_hopsworks_inference_path(self, project_id: int, deployment_instance):
         return [
             "project",
             project_id,
