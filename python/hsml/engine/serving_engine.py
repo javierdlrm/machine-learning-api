@@ -71,12 +71,15 @@ class ServingEngine:
                         PREDICTOR_STATE.STATUS_RUNNING,
                         await_status,
                     )
-                    if state.status.upper() != PREDICTOR_STATE.STATUS_RUNNING:
+                    if (
+                        state is not None
+                        and state.status.upper() != PREDICTOR_STATE.STATUS_RUNNING
+                    ):
                         return
                 if step["status"] == PREDICTOR_STATE.STATUS_RUNNING:
                     pass
             except BaseException as be:
-                self.stop(self, deployment_instance, await_status=0)
+                self.stop(deployment_instance, await_status=0)
                 raise be
 
     def stop(self, deployment_instance, await_status: int):
