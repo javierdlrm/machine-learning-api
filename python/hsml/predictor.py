@@ -22,7 +22,7 @@ from hsml import deployment
 
 from hsml.predictor_config import PredictorConfig
 from hsml.transformer_config import TransformerConfig
-from python.hsml.predictor_state import PredictorState
+from hsml.predictor_state import PredictorState
 
 
 class Predictor:

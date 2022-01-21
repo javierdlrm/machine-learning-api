@@ -21,7 +21,7 @@ from hsml.model import Model
 from hsml.predictor import Predictor
 from hsml.predictor_config import PredictorConfig
 from hsml.deployment import Deployment
-from python.hsml.transformer_config import TransformerConfig
+from hsml.transformer_config import TransformerConfig
 
 
 class ModelServing:
