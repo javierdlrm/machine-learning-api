@@ -174,6 +174,12 @@ class ServingApi:
                 _client._project_name, deployment_instance.name
             )
 
+            # TODO: HACK: Change the way to set the port. Get it from a new endpoint in Hopsworks REST API
+            if "12345" in _client._base_url:
+                _client._base_url = _client._base_url.replace(
+                    "12345", str(deployment_instance.get_state().internal_port)
+                )
+
         return _client._send_request(
             "POST", path_params, headers=headers, data=json.dumps(data)
         )
