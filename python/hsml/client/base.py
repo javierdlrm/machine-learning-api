@@ -106,6 +106,9 @@ class Client(ABC):
             response = self._session.send(prepped, verify=self._verify, stream=stream)
 
         if response.status_code // 100 != 2:
+            print("Response status code: ")
+            print(response.status_code)
+            print(response)
             raise exceptions.RestAPIError(url, response)
 
         if stream:
