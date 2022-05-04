@@ -105,10 +105,15 @@ class Client(ABC):
             prepped = self._session.prepare_request(request)
             response = self._session.send(prepped, verify=self._verify, stream=stream)
 
+        print("REQUEST:")
+        print(request.url)
+        print(request.data)
+        print(request.headers)
+
+        print("RESPONSE:")
+        print(response.status_code)
+
         if response.status_code // 100 != 2:
-            print("Response status code: ")
-            print(response.status_code)
-            print(response)
             raise exceptions.RestAPIError(url, response)
 
         if stream:
