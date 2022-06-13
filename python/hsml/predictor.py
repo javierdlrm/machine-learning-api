@@ -20,6 +20,7 @@ from typing import Union, Optional
 from hsml import util
 from hsml import deployment
 
+from hsml.core import serving_api
 from hsml.constants import PREDICTOR
 from hsml.transformer import Transformer
 from hsml.predictor_state import PredictorState
@@ -66,9 +67,13 @@ class Predictor(DeployableComponent):
         self._created_at = created_at
         self._creator = creator
 
+        self._serving_api = serving_api.ServingApi()
+
         self._model_server = self._validate_model_server(model_server)
-        self._serving_tool = (
-            self._validate_serving_tool(serving_tool) or PREDICTOR.SERVING_TOOL_DEFAULT
+        self._serving_tool = self._validate_serving_tool(serving_tool) or (
+            PREDICTOR.SERVING_TOOL_KSERVE
+            if self._serving_api.is_kserve_installed()
+            else PREDICTOR.SERVING_TOOL_DEFAULT
         )
         self._inference_logger = util.get_obj_from_json(
             inference_logger, InferenceLogger
@@ -84,7 +89,6 @@ class Predictor(DeployableComponent):
 
         _deployment = deployment.Deployment(predictor=self, name=self._name)
         _deployment.save()
-        print("Deployment started, explore it at " + _deployment.get_url())
 
         return _deployment
 

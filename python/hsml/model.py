@@ -113,7 +113,7 @@ class Model:
         serving_tool: Optional[str] = None,
         script_file: Optional[str] = None,
         resources: Optional[Union[PredictorResources, dict]] = DEFAULT,
-        inference_logger: Optional[Union[InferenceLogger, dict]] = DEFAULT,
+        inference_logger: Optional[Union[InferenceLogger, dict]] = None,
         inference_batcher: Optional[Union[InferenceBatcher, dict]] = None,
         transformer: Optional[Union[Transformer, dict]] = None,
     ):
@@ -412,9 +412,6 @@ class Model:
         """
         return self._model_engine.get_tags(self)
 
-    def __repr__(self):
-        return f"Model(name: {self._name!r}, version: {self._version!r})"
-
     def get_url(self):
         path = (
             "/p/"
@@ -425,3 +422,6 @@ class Model:
             + str(self.version)
         )
         return util.get_hostname_replaced_url(path)
+
+    def __repr__(self):
+        return f"Model(name: {self._name!r}, version: {self._version!r})"

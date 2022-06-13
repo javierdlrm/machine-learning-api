@@ -17,6 +17,10 @@
 import json
 
 from hsml import client, deployment, predictor_state
+from hsml import inference_endpoint
+
+
+_is_kserve_installed = None
 
 
 class ServingApi:
@@ -57,22 +61,39 @@ class ServingApi:
         )
         return deployment.Deployment.from_response_json(deployment_json)
 
-    def get_all(self):
+    def get_all(self, model_name=None, status=None):
         """Get the metadata of all deployments.
 
-        :return: model metadata objects
+        :param model_name: name of the model being deployed
+        :type model_name: str
+        :param status: status of the deployments
+        :type status: str
+        :return: deployment metadata objects
         :rtype: List[Deployment]
         """
 
         _client = client.get_instance()
         path_params = ["project", _client._project_id, "serving"]
-        deployments_json = _client._send_request("GET", path_params)
+        query_params = {"model": model_name, "status": status}
+        deployments_json = _client._send_request("GET", path_params, query_params)
         return deployment.Deployment.from_response_json(deployments_json)
+
+    def get_inference_endpoints(self):
+        """Get inference endpoints.
+
+        :return: inference endpoints for the current project.
+        :rtype: List[InferenceEndpoint]
+        """
+
+        _client = client.get_instance()
+        path_params = ["project", _client._project_id, "inference", "endpoints"]
+        endpoints_json = _client._send_request("GET", path_params)
+        return inference_endpoint.InferenceEndpoint.from_response_json(endpoints_json)
 
     def put(self, deployment_instance, query_params: dict):
         """Save deployment metadata to model serving.
 
-        :param deployment_instance: metadata object of deployment to be saved
+        :param deployment_instance: metadata object of the deployment to be saved
         :type deployment_instance: Deployment
         :return: updated metadata object of the deployment
         :rtype: Deployment
@@ -93,6 +114,8 @@ class ServingApi:
     def post(self, deployment_instance, action: str):
         """Perform an action on the deployment
 
+        :param deployment_instance: metadata object of the deployment to be started/stopped
+        :type deployment_instance: Deployment
         :param action: action to perform on the deployment (i.e., START or STOP)
         :type action: str
         """
@@ -110,7 +133,7 @@ class ServingApi:
     def delete(self, deployment_instance):
         """Delete the deployment and metadata.
 
-        :param deployment_instance: metadata object of the deployment to delete
+        :param deployment_instance: metadata object of the deployment to be deleted
         :type deployment_instance: Deployment
         """
         _client = client.get_instance()
@@ -169,21 +192,55 @@ class ServingApi:
         else:
             _client = client.get_istio_instance()
             path_params = self._get_istio_inference_path(deployment_instance)
-            # add host header
             headers["host"] = self._get_inference_request_host_header(
-                _client._project_name, deployment_instance.name
+                _client._project_name, deployment_instance.name, _client._domain_name
             )
-
-            if _client._base_url.endswith(":"):
-                # if the istio ingress port is not set, use the one in the deployment metadata
-                _client._base_url += str(deployment_instance.get_state().internal_port)
 
         return _client._send_request(
             "POST", path_params, headers=headers, data=json.dumps(data)
         )
 
-    def _get_inference_request_host_header(self, project_name: str, serving_name: str):
-        return "{}.{}.hopsworks.ai".format(serving_name, project_name.replace("_", "-"))
+    def is_kserve_installed(self):
+        """Check whether kserve is installed or not
+
+        :return: whether kserve is installed or not
+        :rtype: bool
+        """
+
+        global _is_kserve_installed
+        if _is_kserve_installed is not None:
+            return _is_kserve_installed  # check cached value
+
+        _client = client.get_instance()
+        path_params = ["variables", "kube_kserve_installed"]
+        response = _client._send_request("GET", path_params)
+
+        # cache _is_kserve_installed
+        _is_kserve_installed = (
+            "successMessage" in response and response["successMessage"] == "true"
+        )
+        return _is_kserve_installed
+
+    def get_inference_domain_name(self):
+        """Retrieve the internal domain name for inference endpoints
+
+        :return: internal domain name for the inference endpoints
+        :rtype: str
+        """
+
+        _client = client.get_instance()
+        path_params = ["variables", "kube_knative_domain_name"]
+        kube_knative_domain_name = _client._send_request("GET", path_params)
+        if "successMessage" not in kube_knative_domain_name:
+            raise ValueError("Could not retrieve the knative gateway domain name")
+        return kube_knative_domain_name["successMessage"]
+
+    def _get_inference_request_host_header(
+        self, project_name: str, deployment_name: str, domain_name: str
+    ):
+        return "{}.{}.{}".format(
+            deployment_name, project_name.replace("_", "-"), domain_name
+        )
 
     def _get_hopsworks_inference_path(self, project_id: int, deployment_instance):
         return [

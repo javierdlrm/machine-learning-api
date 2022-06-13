@@ -25,7 +25,7 @@ from hsml import util
 from hsml.constants import DEPLOYMENT, PREDICTOR, PREDICTOR_STATE
 from hsml.core import serving_api, dataset_api
 
-from hsml.client.exceptions import ModelServingException
+from hsml.client.exceptions import ModelServingException, RestAPIError
 
 
 class ServingEngine:
@@ -59,9 +59,9 @@ class ServingEngine:
                 + " to wait longer."
             )
 
-    def start(self, deployment_instance, await_status: int):
+    def start(self, deployment_instance, await_status: int) -> bool:
         if self._check_status(deployment_instance, PREDICTOR_STATE.STATUS_RUNNING):
-            return
+            return True
 
         pbar = tqdm(total=deployment_instance.requested_instances)
         pbar.set_description("Starting deployment")
@@ -86,13 +86,14 @@ class ServingEngine:
                 and state.status.upper() == PREDICTOR_STATE.STATUS_RUNNING
             ):
                 pbar.set_description("Deployment is running")
+                return True
         except BaseException as be:
             self.stop(deployment_instance, await_status=0)
             raise be
 
-    def stop(self, deployment_instance, await_status: int):
+    def stop(self, deployment_instance, await_status: int) -> bool:
         if self._check_status(deployment_instance, PREDICTOR_STATE.STATUS_STOPPED):
-            return
+            return True
 
         pbar = tqdm(total=deployment_instance.requested_instances)
         pbar.set_description("Stopping deployment")
@@ -115,15 +116,33 @@ class ServingEngine:
         )
         if state is not None and state.status.upper() == PREDICTOR_STATE.STATUS_STOPPED:
             pbar.set_description("Deployment is stopped")
+            return True
+        return False
 
     def predict(self, deployment_instance, data: dict):
         serving_tool = deployment_instance.predictor.serving_tool
         through_hopsworks = (
             serving_tool != PREDICTOR.SERVING_TOOL_KSERVE
         )  # if not KServe, send request to Hopsworks
-        return self._serving_api.send_inference_request(
-            deployment_instance, data, through_hopsworks
-        )
+        try:
+            response = self._serving_api.send_inference_request(
+                deployment_instance, data, through_hopsworks
+            )
+            return response
+        except RestAPIError as re:
+            print("Inference request failed with response: ")
+            print(re.response)
+            if re.response.status_code == 403 or re.response.status_code == 401:
+                print("Unauthorized!")
+                print(re.response.status_code)
+            if re.response.status_code == 500:
+                print("Internal server error")
+                print(re.response)
+                print(re.response.content)
+            if re.response.status_code == 404:
+                print("BAD REQUEST")
+                print(re.response.content)
+            raise re
 
     def _check_status(self, deployment_instance, desired_status):
         status = deployment_instance.get_state().status.upper()

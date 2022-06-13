@@ -66,16 +66,28 @@ class ModelServing:
 
         return self._serving_api.get(name)
 
-    def get_deployments(self):
+    def get_deployments(self, model_name=None, status=None):
         """Get all deployments from model serving.
 
+        # Arguments
+            model_name: Name of the model being deployed.
+            status: Status of the deployments (e.g., STARTING, RUNNING, UPDATING, STOPPING or STOPPED)
         # Returns
             `List[Deployment]`: A list of deployments.
         # Raises
             `RestAPIError`: If unable to retrieve deployments from model serving.
         """
 
-        return self._serving_api.get_all()
+        return self._serving_api.get_all(model_name, status)
+
+    def get_inference_endpoints(self):
+        """Get all inference endpoints available in the current project.
+
+        # Returns
+            `List[InferenceEndpoint]`: Inference endpoints for model inference
+        """
+
+        return self._serving_api.get_inferece_endpoints()
 
     def create_predictor(
         self,

@@ -54,6 +54,7 @@ class Deployment:
         """Persist this deployment including the predictor and metadata to Model Serving."""
 
         self._serving_api.put(self, query_params={})
+        print("Deployment created, explore it at " + self.get_url())
 
     def start(self, await_running: Optional[int] = 60):
         """Start the deployment
@@ -64,7 +65,8 @@ class Deployment:
                            it deploys in the background.
         """
 
-        self._serving_engine.start(self, await_status=await_running)
+        if self._serving_engine.start(self, await_status=await_running):
+            print("Start making predictions by calling `.predict()`")
 
     def stop(self, await_stopped: Optional[int] = 60):
         """Stop the deployment
@@ -114,6 +116,15 @@ class Deployment:
         """Print a description of the deployment"""
 
         util.pretty_print(self)
+
+    def get_url(self):
+        path = (
+            "/p/"
+            + str(client.get_instance()._project_id)
+            + "/deployments/"
+            + str(self.id)
+        )
+        return util.get_hostname_replaced_url(path)
 
     @classmethod
     def from_response_json(cls, json_dict):
@@ -289,12 +300,3 @@ class Deployment:
 
     def __repr__(self):
         return f"Deployment(name: {self._name!r})"
-
-    def get_url(self):
-        path = (
-            "/p/"
-            + str(client.get_instance()._project_id)
-            + "/deployments/"
-            + str(self.id)
-        )
-        return util.get_hostname_replaced_url(path)
