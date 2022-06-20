@@ -232,6 +232,19 @@ class ServingApi:
             and kserve_installed["successMessage"] == "true"
         )
 
+    def get_inference_domain_name(self):
+        """Retrieve the internal domain name for inference endpoints
+        :return: internal domain name for the inference endpoints
+        :rtype: str
+        """
+
+        _client = client.get_instance()
+        path_params = ["variables", "kube_knative_domain_name"]
+        kube_knative_domain_name = _client._send_request("GET", path_params)
+        if "successMessage" not in kube_knative_domain_name:
+            raise ValueError("Could not retrieve the knative gateway domain name")
+        return kube_knative_domain_name["successMessage"]
+
     def get_logs(self, deployment_instance, component, tail):
         """Get the logs of a deployment
 
@@ -262,10 +275,10 @@ class ServingApi:
         )
 
     def _get_inference_request_host_header(
-        self, project_name: str, deployment_name: str
+        self, project_name: str, deployment_name: str, domain_name: str
     ):
-        return "{}.{}.hopsworks.ai".format(
-            deployment_name, project_name.replace("_", "-")
+        return "{}.{}.{}".format(
+            deployment_name, project_name.replace("_", "-"), domain_name
         )
 
     def _get_hopsworks_inference_path(self, project_id: int, deployment_instance):

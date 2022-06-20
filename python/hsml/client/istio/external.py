@@ -25,6 +25,7 @@ class Client(istio.Client):
         self,
         host,
         port,
+        domain_name,
         project,
         api_key_value,
         hostname_verification=None,
@@ -34,13 +35,14 @@ class Client(istio.Client):
         self._host = host
         self._port = port
         self._base_url = "http://" + self._host + ":" + str(self._port)
+        self._domain_name = domain_name
         self._project_name = project
 
         self._auth = auth.ApiKeyAuth(api_key_value)
 
         self._session = requests.session()
         self._connected = True
-        self._verify = self._get_verify(hostname_verification, trust_store_path)
+        self._verify = self._get_verify(self._host, trust_store_path)
 
         self._cert_key = None
 

@@ -302,10 +302,6 @@ class Predictor(DeployableComponent):
         """Serving tool used to run the model server."""
         return self._serving_tool
 
-    @serving_tool.setter
-    def serving_tool(self, serving_tool: str):
-        self._serving_tool = serving_tool
-
     @property
     def script_file(self):
         """Script file used to load and run the model."""

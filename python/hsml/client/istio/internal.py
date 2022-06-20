@@ -48,11 +48,12 @@ class Client(istio.Client):
     MATERIAL_PWD = "material_passwd"
     SECRETS_DIR = "SECRETS_DIR"
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, domain_name):
         """Initializes a client being run from a job/notebook directly on Hopsworks."""
         self._host = host
         self._port = port
         self._base_url = "http://" + self._host + ":" + str(self._port)
+        self._domain_name = domain_name
 
         trust_store_path = self._get_trust_store_path()
         hostname_verification = (

@@ -71,14 +71,16 @@ def get_instance() -> hw_base.Client:
     raise Exception("Couldn't find client. Try reconnecting to Hopsworks.")
 
 
-def set_istio_client(host, port, project=None, api_key_value=None):
+def set_istio_client(host, port, domain_name, project=None, api_key_value=None):
     global _client_type, _istio_client
 
     if not _istio_client:
         if _client_type == "internal":
-            _istio_client = ist_internal.Client(host, port)
+            _istio_client = ist_internal.Client(host, port, domain_name)
         elif _client_type == "external":
-            _istio_client = ist_external.Client(host, port, project, api_key_value)
+            _istio_client = ist_external.Client(
+                host, port, domain_name, project, api_key_value
+            )
 
 
 def get_istio_instance() -> ist_base.Client:

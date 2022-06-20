@@ -60,6 +60,7 @@ class ModelServingApi:
                 pass
 
             # setup istio client
+            domain_name = self._serving_api.get_inference_domain_name()
             inference_endpoints = self._serving_api.get_inference_endpoints()
             if client.get_client_type() == "internal":
                 endpoint = get_endpoint_by_type(
@@ -69,6 +70,7 @@ class ModelServingApi:
                     client.set_istio_client(
                         endpoint.get_any_host(),
                         endpoint.get_port(INFERENCE_ENDPOINTS.PORT_NAME_HTTP).number,
+                        domain_name,
                     )
                 else:
                     raise ValueError(
@@ -85,6 +87,7 @@ class ModelServingApi:
                     client.set_istio_client(
                         endpoint.get_any_host(),
                         endpoint.get_port(INFERENCE_ENDPOINTS.PORT_NAME_HTTP).number,
+                        domain_name,
                         _client._project_name,
                         _client._auth._token,  # reuse hopsworks client token
                     )
