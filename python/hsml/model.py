@@ -28,6 +28,8 @@ from hsml.inference_logger import InferenceLogger
 from hsml.inference_batcher import InferenceBatcher
 from hsml.transformer import Transformer
 
+from hsml.client.hopsworks.external import Client
+
 
 class Model:
     """Metadata object representing a model in the Model Registry."""
@@ -174,6 +176,33 @@ class Model:
         )
 
         return predictor.deploy()
+
+    def get_training_dataset():
+        import importlib.util
+
+        if importlib.util.find_spec("hsfs"):
+            print("HSFS detected")
+            from hsfs import connection
+
+            _client = client.get_instance()
+            if type(_client) == Client:  # If external client
+                fs = connection(
+                    host=_client._host,
+                    port=_client._port,
+                    project=_client._project_name,
+                    api_key_value=_client._auth._token,
+                    engine="python",
+                ).get_feature_store()
+            else:
+                fs = connection().get_feature_store()  # If internal client
+            print(
+                "Connected to Feature Store: "
+                + str(fs._name)
+                + " in project "
+                + fs._projecT_name
+            )
+        else:
+            raise ValueError("HSFS not installed")
 
     @classmethod
     def from_response_json(cls, json_dict):
