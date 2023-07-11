@@ -177,7 +177,7 @@ class Model:
 
         return predictor.deploy()
 
-    def get_training_dataset():
+    def get_training_dataset(self):
         import importlib.util
 
         if importlib.util.find_spec("hsfs"):
@@ -199,8 +199,9 @@ class Model:
                 "Connected to Feature Store: "
                 + str(fs._name)
                 + " in project "
-                + fs._projecT_name
+                + fs._project_name
             )
+            fs.get_feature_view("")
         else:
             raise ValueError("HSFS not installed")
 
