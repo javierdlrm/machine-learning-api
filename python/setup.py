@@ -43,7 +43,7 @@ setup(
         "tqdm",
     ],
     extras_require={
-        "dev": ["pytest", "flake8", "black"],
+        "dev": ["pytest==7.1.2", "pytest-mock==3.8.2", "flake8", "black"],
         "docs": [
             "mkdocs==1.3.0",
             "mkdocs-material==8.2.8",
