@@ -18,6 +18,7 @@ import os
 from abc import abstractmethod
 
 from hsml.client import base, exceptions
+from hsml.client.istio.grpc.inference_client import GRPCInferenceServerClient
 
 
 class Client(base.Client):
@@ -90,7 +91,14 @@ class Client(base.Client):
         """Closes a client. Can be implemented for clean up purposes, not mandatory."""
         self._connected = False
 
-    def replace_public_host(self, url):
+    def _replace_public_host(self, url):
         """replace hostname to public hostname set in HOPSWORKS_PUBLIC_HOST"""
         ui_url = url._replace(netloc=os.environ[self.HOPSWORKS_PUBLIC_HOST])
         return ui_url
+
+    def _create_grpc_channel(self, service_hostname: str) -> GRPCInferenceServerClient:
+        return GRPCInferenceServerClient(
+            url=self._host + ":" + str(self._port),
+            channel_args=(("grpc.ssl_target_name_override", service_hostname),),
+            serving_api_key=self._get_serving_api_key(),
+        )
