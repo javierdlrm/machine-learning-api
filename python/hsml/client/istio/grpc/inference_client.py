@@ -15,7 +15,7 @@
 
 import grpc
 
-from hsml.client.istio.grpc.infer_type import InferRequest
+from hsml.client.istio.utils.infer_type import InferRequest, InferResponse
 from hsml.client.istio.grpc.proto.grpc_predict_v2_pb2_grpc import (
     GRPCInferenceServiceStub,
 )
@@ -57,12 +57,19 @@ class GRPCInferenceServerClient:
 
     def infer(self, infer_request: InferRequest, headers=None, client_timeout=None):
         headers = {} if headers is None else headers
-        headers["Authorization"] = "ApiKey " + self._serving_api_key
+        headers["authorization"] = "ApiKey " + self._serving_api_key
         metadata = headers.items()
+
+        # convert the InferRequest to a ModelInferRequest message
         request = infer_request.to_grpc()
+
         try:
-            return self._client_stub.ModelInfer(
+            # send request
+            model_infer_response = self._client_stub.ModelInfer(
                 request=request, metadata=metadata, timeout=client_timeout
             )
         except grpc.RpcError as rpc_error:
             raise rpc_error
+
+        # convert back the ModelInferResponse message to InferResponse
+        return InferResponse.from_grpc(model_infer_response)

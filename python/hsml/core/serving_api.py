@@ -21,7 +21,11 @@ from hsml import client, deployment, predictor_state
 from hsml import inference_endpoint
 from hsml import deployable_component_logs
 from hsml.constants import ARTIFACT_VERSION, INFERENCE_ENDPOINTS as IE
-from hsml.client.istio.grpc.infer_type import InferRequest, InferResponse, InferInput
+from hsml.client.istio.utils.infer_type import (
+    InferRequest,
+    InferInput,
+    InferOutput,
+)
 
 
 class ServingApi:
@@ -191,19 +195,19 @@ class ServingApi:
     def send_inference_request(
         self,
         deployment_instance,
-        data: Union[Dict, InferInput, List[InferInput]],
+        data: Union[Dict, List[InferInput]],
         through_hopsworks: bool = False,
-    ) -> Union[Dict, InferResponse]:
+    ) -> Union[Dict, List[InferOutput]]:
         """Send inference requests to a deployment with a certain id
 
         :param deployment_instance: metadata object of the deployment to be used for the prediction
         :type deployment_instance: Deployment
         :param data: payload of the inference request
-        :type data: Union[Dict, InferRequest]
+        :type data: Union[Dict, List[InferInput]]
         :param through_hopsworks: whether to send the inference request through the Hopsworks REST API or not
         :type through_hopsworks: bool
         :return: inference response
-        :rtype: Union[Dict, InferResponse]
+        :rtype: Union[Dict, List[InferOutput]]
         """
         if deployment_instance.api_protocol == IE.API_PROTOCOL_REST:
             # REST protocol, use hopsworks or istio client
@@ -216,7 +220,7 @@ class ServingApi:
                 deployment_instance, data
             )
 
-    def _send_inference_request_rest_protocol(
+    def _send_inference_request_via_rest_protocol(
         self,
         deployment_instance,
         data: Dict,
@@ -246,31 +250,42 @@ class ServingApi:
                 path_params = self._get_hopsworks_inference_path(
                     _client._project_id, deployment_instance
                 )
+
+        # send inference request
         return _client._send_request(
             "POST", path_params, headers=headers, data=json.dumps(data)
         )
 
-    def _send_inference_request_grpc_protocol(
-        self, deployment_instance, data: Union[InferInput, List[InferInput]]
-    ) -> InferResponse:
+    def _send_inference_request_via_grpc_protocol(
+        self, deployment_instance, data: List[InferInput]
+    ) -> List[InferOutput]:
         # get grpc channel
-        channel = deployment_instance._grpc_channel
-        if channel is None:
-            # If .start() was not called on the deployment instance, the grpc channel is not initialized yet
+        if deployment_instance._grpc_channel is None:
+            # The gRPC channel is lazily initialized. The first call to deployment.predict() will initialize
+            # the channel, which will be reused in all following calls on the same deployment object.
+            # The gRPC channel is freed when calling deployment.stop()
+            print("Initializing gRPC channel...")
             deployment_instance._grpc_channel = self._create_grpc_channel(
                 deployment_instance.name
             )
-        # build and send inference request
+        # build an infer request
         request = InferRequest(
             infer_inputs=data,
             model_name=deployment_instance.name,
         )
-        return channel.infer(infer_request=request, headers=None)
+
+        # send infer request
+        infer_response = deployment_instance._grpc_channel.infer(
+            infer_request=request, headers=None
+        )
+
+        # extract infer outputs
+        return infer_response.outputs
 
     def _create_grpc_channel(self, deployment_name: str):
         _client = client.get_istio_instance()
         service_hostname = self._get_inference_request_host_header(
-            _client.project_name,
+            _client._project_name,
             deployment_name,
             client.get_knative_domain(),
         )

@@ -281,7 +281,7 @@ class Predictor(DeployableComponent):
             "modelServer": self._model_server,
             "servingTool": self._serving_tool,
             "predictor": self._script_file,
-            "api_protocol": self._api_protocol,
+            "apiProtocol": self._api_protocol,
         }
         if self._resources is not None:
             json = {**json, **self._resources.to_dict()}
@@ -441,8 +441,8 @@ class Predictor(DeployableComponent):
         return self._api_protocol
 
     @api_protocol.setter
-    def api_protocol(self, protocol):
-        self._api_protocol = protocol
+    def api_protocol(self, api_protocol):
+        self._api_protocol = api_protocol
 
     def __repr__(self):
         desc = (

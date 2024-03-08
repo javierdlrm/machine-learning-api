@@ -34,7 +34,7 @@ from hsml.constants import (
 from hsml.core import serving_api, dataset_api
 
 from hsml.client.exceptions import ModelServingException, RestAPIError
-from hsml.client.istio.grpc.infer_type import InferInput
+from hsml.client.istio.utils.infer_type import InferInput
 
 
 class ServingEngine:
@@ -143,16 +143,6 @@ class ServingEngine:
                 raise re
 
         if state.status == PREDICTOR_STATE.STATUS_RUNNING:
-            if (
-                deployment_instance.grpc_channel is None
-                and deployment_instance.serving_tool == PREDICTOR.SERVING_TOOL_KSERVE
-                and deployment_instance.protocol == IE.PROTOCOL_GRPC
-            ):
-                # create a grpc channel
-                print("Creating a gRPC channel...")
-                deployment_instance._grpc_channel = (
-                    self._serving_api._create_grpc_channel(deployment_instance.name)
-                )
             print("Start making predictions by using `.predict()`")
 
     def stop(self, deployment_instance, await_status: int) -> bool:
@@ -459,7 +449,11 @@ class ServingEngine:
         if state is None:
             return
 
-        if not force and state.status != PREDICTOR_STATE.STATUS_STOPPED:
+        if (
+            not force
+            and state.status != PREDICTOR_STATE.STATUS_STOPPED
+            and state.status != PREDICTOR_STATE.STATUS_CREATED
+        ):
             raise ModelServingException(
                 "Deployment not stopped, please stop it first by using `.stop()` or check its status with .get_state()"
             )
@@ -510,8 +504,8 @@ class ServingEngine:
     def predict(
         self,
         deployment_instance,
-        data: Union[Dict, InferInput, List[InferInput]],
-        inputs: Union[List, Dict],
+        data: Union[Dict, List[InferInput]],
+        inputs: Union[Dict, List[Dict]],
     ):
         # validate user-provided payload
         self._validate_inference_payload(deployment_instance.api_protocol, data, inputs)
@@ -546,8 +540,8 @@ class ServingEngine:
     def _validate_inference_payload(
         self,
         api_protocol,
-        data: Union[Dict, InferInput, List[InferInput]],
-        inputs: Union[List, Dict],
+        data: Union[Dict, List[InferInput]],
+        inputs: Union[Dict, List[Dict]],
     ):
         """Validates the user-provided inference payload. Either data or inputs parameter is expected, but both cannot be provided together."""
         # check null inputs
@@ -555,84 +549,111 @@ class ServingEngine:
             raise ModelServingException(
                 "Inference data and inputs parameters cannot be provided together."
             )
-        # check empty inputs
-        if isinstance(data or inputs, List) and len(data or inputs) == 0:
-            raise ModelServingException("Inference inputs cannot be empty.")
         # check data or inputs
         if data is not None:
             self._validate_inference_data(api_protocol, data)
         else:
-            self._validate_inference_inputs(inputs)
+            self._validate_inference_inputs(api_protocol, inputs)
 
     def _validate_inference_data(
-        self, api_protocol, data: Union[Dict, InferInput, List[InferInput]]
+        self, api_protocol, data: Union[Dict, List[InferInput]]
     ):
         """Validates the inference payload when provided through the `data` parameter. The data parameter contains the raw payload to be sent
-        in the inference request and should be passed with the corresponding type and format depending on the API protocol.
-        More specifically, a dictionary for the REST protocol or an InferInput object for the GRPC protocol.
+        in the inference request and should have the corresponding type and format depending on the API protocol.
+        For the REST protocol, data should be a dictionary. For GRPC protocol, one or more InferInput objects is expected.
         """
         if api_protocol == IE.API_PROTOCOL_REST:  # REST protocol
-            if isinstance(data, InferInput) or (
-                isinstance(data, List) and isinstance(data[0], InferInput)
-            ):
+            if isinstance(data, Dict):
+                if "instances" not in data and "inputs" not in data:
+                    raise ModelServingException(
+                        "Inference data is missing 'instances' key."
+                    )
+
+                payload = data["instances"] if "instances" in data else data["inputs"]
+                if not isinstance(payload, List):
+                    raise ModelServingException(
+                        "Instances field should contain a 2-dim list."
+                    )
+                elif len(payload) == 0:
+                    raise ModelServingException(
+                        "Inference data cannot contain an empty list."
+                    )
+                elif not isinstance(payload[0], List):
+                    raise ModelServingException(
+                        "Instances field should contain a 2-dim list."
+                    )
+                elif len(payload[0]) == 0:
+                    raise ModelServingException(
+                        "Inference data cannot contain an empty list."
+                    )
+            else:  # not Dict
+                if isinstance(data, InferInput) or (
+                    isinstance(data, List) and isinstance(data[0], InferInput)
+                ):
+                    raise ModelServingException(
+                        "Inference data cannot contain `InferInput` for deployments with gRPC protocol disabled. Use a dictionary instead."
+                    )
                 raise ModelServingException(
-                    "Inference data cannot be of type InferInput for deployments with gRPC protocol disabled. Use a dictionary instead."
+                    "Inference data must be a dictionary. Otherwise, use the `inputs` parameter."
                 )
-        if api_protocol == IE.API_PROTOCOL_GRPC:  # gRPC protocol
+
+        else:  # gRPC protocol
             if isinstance(data, Dict):
                 raise ModelServingException(
                     "Inference data cannot be a dictionary for deployments with gRPC protocol enabled. "
-                    "Convert it to `InferInput` type or use the `inputs` parameter instead."
+                    "Create a `InferInput` object or use the `inputs` parameter instead."
                 )
-        if isinstance(data, Dict):
-            payload_list = None
-            if "instances" in data:
-                if not isinstance(data["instances"], List):
+            elif isinstance(data, List):
+                if len(data) == 0:
                     raise ModelServingException(
-                        "Instances fields should contain a list."
+                        "Inference data cannot contain an empty list."
                     )
-                payload_list = data["instances"]
-            if "inputs" in data:
-                if not isinstance(data["inputs"], List):
-                    raise ModelServingException("Inputs field should contain a list.")
-                payload_list = data["inputs"]
-            if payload_list is None:
+                if not isinstance(data[0], InferInput):
+                    raise ModelServingException(
+                        "Inference data must contain a list of `InferInput` objects. Otherwise, use the `inputs` parameter."
+                    )
+            else:
                 raise ModelServingException(
-                    "Inference data is missing 'instances' key."
+                    "Inference data must contain a list of `InferInput` objects for deployments with gRPC protocol enabled."
                 )
-        elif not isinstance(data, InferInput):  # neither Dict nor InferInput
-            expected_type = "a dictionary"
-            if IE.API_PROTOCOL_GRPC:
-                expected_type = "an InferInput object"
-            raise ModelServingException(
-                f"Inference data must be {expected_type}. Otherwise, use the `inputs` parameter."
-            )
 
-    def _validate_inference_inputs(self, inputs: Union[List, Dict]):
+    def _validate_inference_inputs(
+        self, api_protocol, inputs: Union[Dict, List[Dict]], recursive_call=False
+    ):
         """Validates the inference payload when provided through the `inputs` parameter. The inputs parameter contains only the payload values,
         which will be parsed when building the request payload. It can be either a dictionary or a list.
         """
-        if isinstance(inputs, InferInput):
+        if isinstance(inputs, List):
+            if len(inputs) == 0:
+                raise ModelServingException("Inference inputs cannot be an empty list.")
+            else:
+                self._validate_inference_inputs(
+                    api_protocol, inputs[0], recursive_call=True
+                )
+        elif isinstance(inputs, InferInput):
             raise ModelServingException(
                 "Inference inputs cannot be of type `InferInput`. Use the `data` parameter instead."
             )
-        if not isinstance(inputs, (Dict, List)):
-            raise ModelServingException(
-                "Inference inputs type is not valid. Supported types are dictionary or list."
-            )
-        if isinstance(inputs, List):
-            if len(inputs) == 0:
-                raise ModelServingException("Inference inputs cannot be empty.")
-            if isinstance(inputs[0], InferInput):
+        elif isinstance(inputs, Dict):
+            required_keys = ("name", "shape", "datatype", "data")
+            if api_protocol == IE.API_PROTOCOL_GRPC and not all(
+                k in inputs for k in required_keys
+            ):
                 raise ModelServingException(
-                    "Inference inputs cannot be of type `InferInput`. Use the `data` parameter instead."
+                    f"Inference inputs is missing one or more keys. Required keys are [{', '.join(required_keys)}]."
                 )
+        elif not recursive_call or (api_protocol == IE.API_PROTOCOL_GRPC):
+            # if it is the first call to this method, inputs have an invalid type/format
+            # if GRPC protocol is used, only Dict type is valid for the input values
+            raise ModelServingException(
+                "Inference inputs type is not valid. Supported types are dictionary and list."
+            )
 
     def _build_inference_payload(
         self,
         api_protocol,
-        data: Union[Dict, InferInput, List[InferInput]],
-        inputs: Union[Dict, List],
+        data: Union[Dict, List[InferInput]],
+        inputs: Union[Dict, List[Dict]],
     ):
         """Build the inference payload for an inference request. If the 'data' parameter is provided, this method ensures
         it has the correct format depending on the API protocol. Otherwise, if the 'inputs' parameter is provided, this method
@@ -640,49 +661,45 @@ class ServingEngine:
         """
         if data is not None:
             # data contains the raw payload (dict or InferInput), nothing needs to be changed
-            pass
+            return data
         else:  # parse inputs
-            if api_protocol == IE.API_PROTOCOL_REST:
-                if not isinstance(inputs, List):
-                    data = {"instances": [inputs]}  # wrap inputs in a list
-                else:
-                    data = {"instances": inputs}  # use given inputs list by default
-                    # check depth of the list: at least two levels are required for batch inference
-                    # if the content is neither a list or dict, wrap it in an additional list
-                    for i in inputs:
-                        if not isinstance(i, List) and not isinstance(i, Dict):
-                            # if there are no two levels, wrap inputs in a list
-                            data = {"instances": [inputs]}
-                            break
-            else:  # gRPC
-                data = self._build_infer_inputs(inputs)
-        return data
+            return self._parse_inference_inputs(api_protocol, inputs)
 
-    def _build_infer_inputs(
-        self, infer_inputs: Union[Dict, List[Dict]]
-    ) -> Union[InferInput, List[InferInput]]:
-        if isinstance(infer_inputs, Dict):  # Dict
-            infer_inputs = InferInput(
-                self._get_value_from_dict("name", infer_inputs),
-                self._get_value_from_dict("shape", infer_inputs),
-                self._get_value_from_dict("datatype", infer_inputs),
-                data=self._get_value_from_dict("data", infer_inputs),
-                parameters=self._get_value_from_dict("parameters", infer_inputs),
-            )
-        else:  # List[Dict]
-            for index, infer_input in enumerate(infer_inputs):
-                if isinstance(infer_input, Dict):
-                    infer_inputs[index] = InferInput(
-                        self._get_value_from_dict("name", infer_input),
-                        self._get_value_from_dict("shape", infer_input),
-                        self._get_value_from_dict("datatype", infer_input),
-                        data=self._get_value_from_dict("data", infer_input),
-                        parameters=self._get_value_from_dict("parameters", infer_input),
+    def _parse_inference_inputs(
+        self, api_protocol, inputs: Union[Dict, List[Dict]], recursive_call=False
+    ):
+        if api_protocol == IE.API_PROTOCOL_REST:  # REST protocol
+            if not isinstance(inputs, List):
+                data = {"instances": [[inputs]]}  # wrap inputs in a 2-dim list
+            else:
+                data = {"instances": inputs}  # use given inputs list by default
+                # check depth of the list: at least two levels are required for batch inference
+                # if the content is neither a list or dict, wrap it in an additional list
+                for i in inputs:
+                    if not isinstance(i, List) and not isinstance(i, Dict):
+                        # if there are no two levels, wrap inputs in a list
+                        data = {"instances": [inputs]}
+                        break
+        else:  # gRPC protocol
+            if isinstance(inputs, Dict):  # Dict
+                data = InferInput(
+                    name=inputs["name"],
+                    shape=inputs["shape"],
+                    datatype=inputs["datatype"],
+                    data=inputs["data"],
+                    parameters=(
+                        inputs["parameters"] if "parameters" in inputs else None
+                    ),
+                )
+                if not recursive_call:
+                    # if inputs is of type Dict, return a singleton
+                    data = [data]
+
+            else:  # List[Dict]
+                data = inputs
+                for index, inputs_item in enumerate(inputs):
+                    data[index] = self._parse_inference_inputs(
+                        api_protocol, inputs_item, recursive_call=True
                     )
-        return infer_inputs
 
-    def _get_value_from_dict(self, key, data: Dict):
-        try:
-            return data[key]
-        except KeyError:
-            return None
+        return data

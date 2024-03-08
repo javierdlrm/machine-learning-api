@@ -28,7 +28,7 @@ from hsml.transformer import Transformer
 
 from hsml.client.exceptions import ModelServingException
 from hsml.constants import DEPLOYABLE_COMPONENT, PREDICTOR_STATE
-from hsml.client.istio.grpc.infer_type import InferInput
+from hsml.client.istio.utils.infer_type import InferInput
 
 
 class Deployment:
@@ -439,12 +439,12 @@ class Deployment:
         return self._predictor.creator
 
     @property
-    def protocol(self):
+    def api_protocol(self):
         return self._predictor.api_protocol
 
-    @protocol.setter
-    def protocol(self, protocol: str):
-        self._predictor.api_protocol = protocol
+    @api_protocol.setter
+    def api_protocol(self, api_protocol: str):
+        self._predictor.api_protocol = api_protocol
 
     def __repr__(self):
         desc = (

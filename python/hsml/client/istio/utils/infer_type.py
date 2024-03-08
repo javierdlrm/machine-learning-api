@@ -21,13 +21,13 @@ import struct
 import numpy
 import numpy as np
 import pandas as pd
-from hsml.client.protocol.errors import InvalidInput
-from hsml.client.protocol.grpc.grpc_predict_v2_pb2 import (
+from hsml.client.istio.grpc.errors import InvalidInput
+from hsml.client.istio.grpc.proto.grpc_predict_v2_pb2 import (
     ModelInferRequest,
     InferTensorContents,
     ModelInferResponse,
 )
-from hsml.client.protocol.numpy_codec import to_np_dtype, from_np_dtype
+from hsml.client.istio.utils.numpy_codec import to_np_dtype, from_np_dtype
 
 GRPC_CONTENT_DATATYPE_MAPPINGS = {
     "BOOL": "bool_contents",
